@@ -1,0 +1,581 @@
+/* FraudDetectionDashboard.css */
+
+.fraud-dashboard-main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    margin-top: 24px;
+  }
+  
+  .fraud-dashboard-heading {
+    margin-top: 32px;
+    margin-bottom: 24px;
+    font-weight: 700;
+    font-size: 2rem;
+    color: #161616;
+  }
+  
+  .fraud-dashboard-cards-row {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  
+  .fraud-dashboard-card {
+    flex: 1;
+    min-width: 220px;
+    background: #fff;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .fraud-dashboard-card-title {
+    font-size: 1rem;
+    color: #525252;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  
+  .fraud-dashboard-card-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #161616;
+  }
+  
+  .fraud-dashboard-card-icon {
+    color: #161616;
+  }
+  
+  .fraud-dashboard-section {
+    background: #fff;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+  
+  .fraud-dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 0 !important;
+    margin-top: 16px;
+  }
+  
+  .fraud-dashboard-table th, .fraud-dashboard-table td {
+    padding: 12px 10px;
+    text-align: left;
+    font-size: 15px;
+  }
+  
+  .fraud-dashboard-table th {
+    background: #f4f4f4;
+    color: #161616;
+    font-weight: 600;
+  }
+  
+  .fraud-dashboard-table tr:nth-child(even) td {
+    background: #fafbfc;
+  }
+  
+  .fraud-dashboard-table tr:hover td {
+    background: #e0e0e0;
+  }
+  .cds--cc--chart-wrapper .fill-14-1-1 {
+    fill: #d9d9d9;
+    background-color: #d9d9d9 !important;
+    
+}
+cds--cc--chart-wrapper .fill-4-1-1 {
+    fill:  #ff9999;}
+  @media (max-width: 900px) {
+    .fraud-dashboard-heading {
+      font-size: 1.3rem;
+    }
+    .fraud-dashboard-cards-row {
+      flex-direction: column;
+      gap: 16px;
+    }
+    .fraud-dashboard-card {
+      min-width: unset;
+    }
+    .fraud-dashboard-main {
+      padding: 12px 4px;
+    }
+  }
+  
+  /* Carbon Design System Chart Customization */
+  .cds--cc--chart-wrapper .fill-4-1-4,
+  .cds--cc--chart-wrapper .fill-4-1-4:hover,
+  .cds--cc--chart-wrapper .fill-4-1-4:active,
+  .cds--cc--chart-wrapper .fill-4-1-4:focus,
+  .cds--cc--chart-wrapper .fill-4-1-4.selected,
+  .cds--cc--chart-wrapper .fill-4-1-4[data-selected="true"] {
+    fill: #ffcccc !important;
+  }
+  
+  .cds--cc--chart-wrapper .fill-14-1-1,
+  .cds--cc--chart-wrapper .fill-14-1-1:hover,
+  .cds--cc--chart-wrapper .fill-14-1-1:active,
+  .cds--cc--chart-wrapper .fill-14-1-1:focus,
+  .cds--cc--chart-wrapper .fill-14-1-1.selected,
+  .cds--cc--chart-wrapper .fill-14-1-1[data-selected="true"] {
+    fill: #d0cfd3 !important;
+  }
+  
+  .cds--cc--chart-wrapper .background-4-1-4,
+  .cds--cc--chart-wrapper .background-4-1-4:hover,
+  .cds--cc--chart-wrapper .background-4-1-4:active,
+  .cds--cc--chart-wrapper .background-4-1-4:focus,
+  .cds--cc--chart-wrapper .background-4-1-4.selected,
+  .cds--cc--chart-wrapper .background-4-1-4[data-selected="true"] {
+    background-color: #ffcccc !important;
+  }
+  
+  .cds--cc--chart-wrapper .background-4-1-1,
+  .cds--cc--chart-wrapper .background-4-1-1:hover,
+  .cds--cc--chart-wrapper .background-4-1-1:active,
+  .cds--cc--chart-wrapper .background-4-1-1:focus,
+  .cds--cc--chart-wrapper .background-4-1-1.selected,
+  .cds--cc--chart-wrapper .background-4-1-1[data-selected="true"] {
+    background-color: #d9d9d9 !important;
+  }
+  
+  /* Override all possible chart segment states */
+  .cds--cc--chart-wrapper [class*="fill-"]:hover,
+  .cds--cc--chart-wrapper [class*="fill-"]:active,
+  .cds--cc--chart-wrapper [class*="fill-"]:focus,
+  .cds--cc--chart-wrapper [class*="fill-"].selected,
+  .cds--cc--chart-wrapper [class*="fill-"][data-selected="true"] {
+    opacity: 0.8 !important;
+  }
+  
+  /* Additional overrides for Carbon Design System specific classes */
+  .cds--cc--chart-wrapper .slice:hover,
+  .cds--cc--chart-wrapper .slice:active,
+  .cds--cc--chart-wrapper .slice:focus,
+  .cds--cc--chart-wrapper .slice.selected {
+    opacity: 0.8 !important;
+  }
+  
+  /* Override any dynamic color changes */
+  .cds--cc--chart-wrapper *[style*="fill"] {
+    transition: opacity 0.2s ease !important;
+  }
+  
+  .cds--cc--chart-wrapper .fill-4-1-2,
+  .cds--cc--chart-wrapper .fill-4-1-2:hover,
+  .cds--cc--chart-wrapper .fill-4-1-2:active,
+  .cds--cc--chart-wrapper .fill-4-1-2:focus,
+  .cds--cc--chart-wrapper .fill-4-1-2.selected,
+  .cds--cc--chart-wrapper .fill-4-1-2[data-selected="true"] {
+    fill: #ff6666 !important;
+  }
+  
+  .cds--cc--chart-wrapper .background-4-1-2,
+  .cds--cc--chart-wrapper .background-4-1-2:hover,
+  .cds--cc--chart-wrapper .background-4-1-2:active,
+  .cds--cc--chart-wrapper .background-4-1-2:focus,
+  .cds--cc--chart-wrapper .background-4-1-2.selected,
+  .cds--cc--chart-wrapper .background-4-1-2[data-selected="true"] {
+    background-color: #ff6666 !important;
+  }
+  
+  /* Override legend tick/checkmark color for High Risk */
+  .cds--cc--legend-item[data-name="High Risk"] .cds--cc--legend-checkbox,
+  .cds--cc--legend-item[data-name="High Risk"] .cds--cc--legend-checkbox svg {
+    background: #ff6666 !important;
+    fill: #ff6666 !important;
+    color: #ff6666 !important;
+    border-color: #ff6666 !important;
+  }
+  
+  .cds--cc--chart-wrapper .fill-4-1-3,
+  .cds--cc--chart-wrapper .fill-4-1-3:hover,
+  .cds--cc--chart-wrapper .fill-4-1-3:active,
+  .cds--cc--chart-wrapper .fill-4-1-3:focus,
+  .cds--cc--chart-wrapper .fill-4-1-3.selected,
+  .cds--cc--chart-wrapper .fill-4-1-3[data-selected="true"] {
+    fill: #ffb3b3 !important;
+  }
+  
+  .cds--cc--chart-wrapper .background-4-1-3,
+  .cds--cc--chart-wrapper .background-4-1-3:hover,
+  .cds--cc--chart-wrapper .background-4-1-3:active,
+  .cds--cc--chart-wrapper .background-4-1-3:focus,
+  .cds--cc--chart-wrapper .background-4-1-3.selected,
+  .cds--cc--chart-wrapper .background-4-1-3[data-selected="true"] {
+    background-color: #ffb3b3 !important;
+  }
+  
+  /* Override legend tick/checkmark color for Clean */
+  .cds--cc--legend-item[data-name="Clean"] .cds--cc--legend-checkbox,
+  .cds--cc--legend-item[data-name="Clean"] .cds--cc--legend-checkbox svg {
+    background: #ffb3b3 !important;
+    fill: #ffb3b3 !important;
+    color: #ffb3b3 !important;
+    border-color: #ffb3b3 !important;
+  }
+  
+  .high-risk-card {
+    background: #fde49a !important;
+  }
+  
+  .high-risk-icon {
+    color: #000000 !important;
+  }
+  
+  /* Override legend tick/checkmark color for CASE 3 */
+  .cds--cc--legend-item[data-name="CASE 3"] .cds--cc--legend-checkbox,
+  .cds--cc--legend-item[data-name="CASE 3"] .cds--cc--legend-checkbox svg {
+    background: #7f7f7f !important;
+    fill: #7f7f7f !important;
+    color: #7f7f7f !important;
+    border-color: #7f7f7f !important;
+  }
+  
+  .cds--cc--chart-wrapper .fill-14-1-7,
+  .cds--cc--chart-wrapper .fill-14-1-7:hover,
+  .cds--cc--chart-wrapper .fill-14-1-7:active,
+  .cds--cc--chart-wrapper .fill-14-1-7:focus,
+  .cds--cc--chart-wrapper .fill-14-1-7.selected,
+  .cds--cc--chart-wrapper .fill-14-1-7[data-selected="true"] {
+    fill: #7f7f7f !important;
+  }
+  
+  .cds--cc--chart-wrapper .background-14-1-7,
+  .cds--cc--chart-wrapper .background-14-1-7:hover,
+  .cds--cc--chart-wrapper .background-14-1-7:active,
+  .cds--cc--chart-wrapper .background-14-1-7:focus,
+  .cds--cc--chart-wrapper .background-14-1-7.selected,
+  .cds--cc--chart-wrapper .background-14-1-7[data-selected="true"] {
+    background-color: #7f7f7f !important;
+  }
+  
+  /* Override legend tick/checkmark color for CASE 2 */
+  .cds--cc--legend-item[data-name="CASE 2"] .cds--cc--legend-checkbox,
+  .cds--cc--legend-item[data-name="CASE 2"] .cds--cc--legend-checkbox svg,
+  div.cds--cc--legend div.legend-item[data-name="CASE 2"] div.checkbox {
+    background: #d9d9d9 !important;
+    fill: #d9d9d9 !important;
+    color: #d9d9d9 !important;
+    border-color: #d9d9d9 !important;
+  }
+  
+  .cds--cc--chart-wrapper .fill-14-1-2,
+  .cds--cc--chart-wrapper .fill-14-1-2:hover,
+  .cds--cc--chart-wrapper .fill-14-1-2:active,
+  .cds--cc--chart-wrapper .fill-14-1-2:focus,
+  .cds--cc--chart-wrapper .fill-14-1-2.selected,
+  .cds--cc--chart-wrapper .fill-14-1-2[data-selected="true"] {
+    fill: #d9d9d9 !important;
+  }
+  
+  .cds--cc--chart-wrapper .background-14-1-2,
+  .cds--cc--chart-wrapper .background-14-1-2:hover,
+  .cds--cc--chart-wrapper .background-14-1-2:active,
+  .cds--cc--chart-wrapper .background-14-1-2:focus,
+  .cds--cc--chart-wrapper .background-14-1-2.selected,
+  .cds--cc--chart-wrapper .background-14-1-2[data-selected="true"] {
+    background-color: #d9d9d9 !important;
+  }
+  
+  /* Override legend tick/checkmark color for CASE 7 */
+  .cds--cc--legend-item[data-name="CASE 7"] .cds--cc--legend-checkbox,
+  .cds--cc--legend-item[data-name="CASE 7"] .cds--cc--legend-checkbox svg {
+    background: #666666 !important;
+    fill: #666666 !important;
+    color: #666666 !important;
+    border-color: #666666 !important;
+  }
+  
+  .cds--cc--chart-wrapper .fill-14-1-3,
+  .cds--cc--chart-wrapper .fill-14-1-3:hover,
+  .cds--cc--chart-wrapper .fill-14-1-3:active,
+  .cds--cc--chart-wrapper .fill-14-1-3:focus,
+  .cds--cc--chart-wrapper .fill-14-1-3.selected,
+  .cds--cc--chart-wrapper .fill-14-1-3[data-selected="true"] {
+    fill: #cccccc !important;
+  }
+  
+  .cds--cc--chart-wrapper .background-14-1-3,
+  .cds--cc--chart-wrapper .background-14-1-3:hover,
+  .cds--cc--chart-wrapper .background-14-1-3:active,
+  .cds--cc--chart-wrapper .background-14-1-3:focus,
+  .cds--cc--chart-wrapper .background-14-1-3.selected,
+  .cds--cc--chart-wrapper .background-14-1-3[data-selected="true"] {
+    background-color: #cccccc !important;
+  }
+  
+  /* Override legend tick/checkmark color for CASE 1 */
+  .cds--cc--legend-item[data-name="CASE 1"] .cds--cc--legend-checkbox,
+  .cds--cc--legend-item[data-name="CASE 1"] .cds--cc--legend-checkbox svg {
+    background: #cccccc !important;
+    fill: #cccccc !important;
+    color: #cccccc !important;
+    border-color: #cccccc !important;
+  }
+  
+  .cds--cc--chart-wrapper .fill-14-1-4,
+  .cds--cc--chart-wrapper .fill-14-1-4:hover,
+  .cds--cc--chart-wrapper .fill-14-1-4:active,
+  .cds--cc--chart-wrapper .fill-14-1-4:focus,
+  .cds--cc--chart-wrapper .fill-14-1-4.selected,
+  .cds--cc--chart-wrapper .fill-14-1-4[data-selected="true"] {
+    fill: #a6a6a6 !important;
+  }
+  
+  .cds--cc--chart-wrapper .background-14-1-4,
+  .cds--cc--chart-wrapper .background-14-1-4:hover,
+  .cds--cc--chart-wrapper .background-14-1-4:active,
+  .cds--cc--chart-wrapper .background-14-1-4:focus,
+  .cds--cc--chart-wrapper .background-14-1-4.selected,
+  .cds--cc--chart-wrapper .background-14-1-4[data-selected="true"] {
+    background-color: #a6a6a6 !important;
+  }
+  
+  /* Override legend tick/checkmark color for CASE 4 */
+  .cds--cc--legend-item[data-name="CASE 4"] .cds--cc--legend-checkbox,
+  .cds--cc--legend-item[data-name="CASE 4"] .cds--cc--legend-checkbox svg {
+    background: #a6a6a6 !important;
+    fill: #a6a6a6 !important;
+    color: #a6a6a6 !important;
+    border-color: #a6a6a6 !important;
+  }
+  
+  .cds--cc--chart-wrapper .fill-14-1-5,
+  .cds--cc--chart-wrapper .fill-14-1-5:hover,
+  .cds--cc--chart-wrapper .fill-14-1-5:active,
+  .cds--cc--chart-wrapper .fill-14-1-5:focus,
+  .cds--cc--chart-wrapper .fill-14-1-5.selected,
+  .cds--cc--chart-wrapper .fill-14-1-5[data-selected="true"] {
+    fill: #3f3f3f !important;
+  }
+  
+  .cds--cc--chart-wrapper .background-14-1-5,
+  .cds--cc--chart-wrapper .background-14-1-5:hover,
+  .cds--cc--chart-wrapper .background-14-1-5:active,
+  .cds--cc--chart-wrapper .background-14-1-5:focus,
+  .cds--cc--chart-wrapper .background-14-1-5.selected,
+  .cds--cc--chart-wrapper .background-14-1-5[data-selected="true"] {
+    background-color: #3f3f3f !important;
+  }
+  
+  /* Override legend tick/checkmark color for CASE 5 */
+  .cds--cc--legend-item[data-name="CASE 5"] .cds--cc--legend-checkbox,
+  .cds--cc--legend-item[data-name="CASE 5"] .cds--cc--legend-checkbox svg {
+    background: #3f3f3f !important;
+    fill: #3f3f3f !important;
+    color: #3f3f3f !important;
+    border-color: #3f3f3f !important;
+  }
+  
+  .cds--cc--chart-wrapper .fill-14-1-6,
+  .cds--cc--chart-wrapper .fill-14-1-6:hover,
+  .cds--cc--chart-wrapper .fill-14-1-6:active,
+  .cds--cc--chart-wrapper .fill-14-1-6:focus,
+  .cds--cc--chart-wrapper .fill-14-1-6.selected,
+  .cds--cc--chart-wrapper .fill-14-1-6[data-selected="true"] {
+    fill: #bfbfbf !important;
+  }
+  
+  .cds--cc--chart-wrapper .background-14-1-6,
+  .cds--cc--chart-wrapper .background-14-1-6:hover,
+  .cds--cc--chart-wrapper .background-14-1-6:active,
+  .cds--cc--chart-wrapper .background-14-1-6:focus,
+  .cds--cc--chart-wrapper .background-14-1-6.selected,
+  .cds--cc--chart-wrapper .background-14-1-6[data-selected="true"] {
+    background-color: #bfbfbf !important;
+  }
+  
+  /* Override legend tick/checkmark color for CASE 6 */
+  .cds--cc--legend-item[data-name="CASE 6"] .cds--cc--legend-checkbox,
+  .cds--cc--legend-item[data-name="CASE 6"] .cds--cc--legend-checkbox svg {
+    background: #bfbfbf !important;
+    fill: #bfbfbf !important;
+    color: #bfbfbf !important;
+    border-color: #bfbfbf !important;
+  }
+  
+  .cds--cc--chart-wrapper .fill-3-1-3,
+  .cds--cc--chart-wrapper .fill-3-1-3:hover,
+  .cds--cc--chart-wrapper .fill-3-1-3:active,
+  .cds--cc--chart-wrapper .fill-3-1-3:focus,
+  .cds--cc--chart-wrapper .fill-3-1-3.selected,
+  .cds--cc--chart-wrapper .fill-3-1-3[data-selected="true"] {
+    fill: #ccebff !important;
+  }
+  
+  .cds--cc--chart-wrapper .background-3-1-3,
+  .cds--cc--chart-wrapper .background-3-1-3:hover,
+  .cds--cc--chart-wrapper .background-3-1-3:active,
+  .cds--cc--chart-wrapper .background-3-1-3:focus,
+  .cds--cc--chart-wrapper .background-3-1-3.selected,
+  .cds--cc--chart-wrapper .background-3-1-3[data-selected="true"] {
+    background-color: #ccebff !important;
+  }
+  
+  /* Override legend tick/checkmark color for Low Severity */
+  .cds--cc--legend-item[data-name="Low Severity"] .cds--cc--legend-checkbox,
+  .cds--cc--legend-item[data-name="Low Severity"] .cds--cc--legend-checkbox svg {
+    background: #FFC7CC !important;
+    fill: #FFC7CC !important;
+    color: #FFC7CC !important;
+    border-color: #FFC7CC !important;
+  }
+  
+  .cds--cc--chart-wrapper .fill-3-1-1,
+  .cds--cc--chart-wrapper .fill-3-1-1:hover,
+  .cds--cc--chart-wrapper .fill-3-1-1:active,
+  .cds--cc--chart-wrapper .fill-3-1-1:focus,
+  .cds--cc--chart-wrapper .fill-3-1-1.selected,
+  .cds--cc--chart-wrapper .fill-3-1-1[data-selected="true"] {
+    fill: #0099ff !important;
+  }
+  
+  .cds--cc--chart-wrapper .background-3-1-1,
+  .cds--cc--chart-wrapper .background-3-1-1:hover,
+  .cds--cc--chart-wrapper .background-3-1-1:active,
+  .cds--cc--chart-wrapper .background-3-1-1:focus,
+  .cds--cc--chart-wrapper .background-3-1-1.selected,
+  .cds--cc--chart-wrapper .background-3-1-1[data-selected="true"] {
+    background-color: #0099ff !important;
+  }
+  
+  /* Override legend tick/checkmark color for High Severity */
+  .cds--cc--legend-item[data-name="High Severity"] .cds--cc--legend-checkbox,
+  .cds--cc--legend-item[data-name="High Severity"] .cds--cc--legend-checkbox svg {
+    background: #66c2ff !important;
+    fill: #66c2ff !important;
+    color: #66c2ff !important;
+    border-color: #66c2ff !important;
+  }
+  
+  .cds--cc--chart-wrapper .fill-3-1-2,
+  .cds--cc--chart-wrapper .fill-3-1-2:hover,
+  .cds--cc--chart-wrapper .fill-3-1-2:active,
+  .cds--cc--chart-wrapper .fill-3-1-2:focus,
+  .cds--cc--chart-wrapper .fill-3-1-2.selected,
+  .cds--cc--chart-wrapper .fill-3-1-2[data-selected="true"] {
+    fill: #66c2ff !important;
+  }
+  
+  .cds--cc--chart-wrapper .background-3-1-2,
+  .cds--cc--chart-wrapper .background-3-1-2:hover,
+  .cds--cc--chart-wrapper .background-3-1-2:active,
+  .cds--cc--chart-wrapper .background-3-1-2:focus,
+  .cds--cc--chart-wrapper .background-3-1-2.selected,
+  .cds--cc--chart-wrapper .background-3-1-2[data-selected="true"] {
+    background-color: #66c2ff !important;
+  }
+  
+  /* Override legend tick/checkmark color for Medium Severity */
+  .cds--cc--legend-item[data-name="Medium Severity"] .cds--cc--legend-checkbox,
+  .cds--cc--legend-item[data-name="Medium Severity"] .cds--cc--legend-checkbox svg {
+    background: #ff9999 !important;
+    fill: #ff9999 !important;
+    color: #ff9999 !important;
+    border-color: #ff9999 !important;
+  }
+  
+  .custom-bg-card {
+    background: #f5f3ff !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  
+  .risk-distribution-section {
+    background: #f4f4f4 !important;
+  }
+  
+  .fraud-case-types-section {
+    background: #f4f4f4 !important;
+  }
+  
+  .severity-distribution-section {
+    background: #f4f4f4 !important;
+  }
+  
+  .cds--cc--chart-wrapper .fill-4-1-1,
+  .cds--cc--chart-wrapper .fill-4-1-1:hover,
+  .cds--cc--chart-wrapper .fill-4-1-1:active,
+  .cds--cc--chart-wrapper .fill-4-1-1:focus,
+  .cds--cc--chart-wrapper .fill-4-1-1.selected,
+  .cds--cc--chart-wrapper .fill-4-1-1[data-selected="true"] {
+    fill: #ff9999 !important;
+  }
+  
+  .dashboard-container {
+    max-width: 1200px;
+    margin: 3.5rem auto 0 auto;
+    padding: 2rem 1rem;
+  }
+  .dashboard-header {
+    margin-bottom: 2rem;
+  }
+  .dashboard-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .dashboard-header p {
+    color: #525252;
+    margin-bottom: 0;
+  }
+  .dashboard-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .dashboard-tiles .dashboard-col {
+    flex: 1 1 200px;
+    min-width: 200px;
+  }
+  .summary-tile {
+    padding: 1.5rem 1rem;
+    background: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    border-left: none;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .tile-value {
+    font-size: 2rem;
+    font-weight: 700;
+  }
+  .dashboard-charts {
+    gap: 2rem;
+  }
+  .dashboard-chart-col {
+    flex: 1 1 300px;
+    min-width: 250px;
+  }
+  .dashboard-table {
+    flex-direction: column;
+  }
+  @media (max-width: 900px) {
+    .dashboard-row { flex-direction: column; gap: 1rem; }
+    .dashboard-charts { flex-direction: column; }
+    .dashboard-col, .dashboard-chart-col { min-width: 0; }
+  }
+  
+  /* Hide the value column in Carbon PieChart's Show as table */
+  .bx--data-table th:last-child,
+  .bx--data-table td:last-child {
+    display: none !important;
+  }
+  
+  .compact-table th,
+  .compact-table td {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.95rem;
+  } 

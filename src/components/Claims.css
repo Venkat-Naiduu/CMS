@@ -1,0 +1,205 @@
+.claims-main {
+  padding: 32px 24px;
+ 
+  max-width: 1200px;
+  margin: 0 auto;
+  margin-top: 64px;
+  background: #f4f4f4;
+}
+
+.claims-actions-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.claims-form-tile {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #fff;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  border-radius: 8px;
+  padding: 32px 40px;
+  
+}
+
+.claims-form-title {
+  margin-top: 0 !important;
+  margin-bottom: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #161616;
+}
+
+.claims-form-grid .cds--form-group {
+  margin-bottom: 32px;
+}
+
+.claims-upload-note {
+  font-size: 0.95rem;
+  color: #525252;
+  margin-top: 8px;
+}
+
+.claims-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.claims-upload-dotted-box {
+  border: 2px dashed #8d8d8d;
+  border-radius: 8px;
+  padding: 32px 24px;
+  background: #fafbfc;
+  text-align: center;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.claims-upload-dotted-box > * {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.claims-upload-dotted-box .cds--form-item {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.claims-section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom:6px;
+  margin-top: 15px;
+  color: #161616;
+}
+
+.claims-section {
+  margin-bottom: 16px;
+  padding-bottom: 9px;
+  border-bottom: 0.5px solid #919191 !important;
+  background: #f4f4f4;
+}
+.claims-section:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+/* Custom input style for Carbon fields */
+.claims-form-tile .bx--text-input,
+.claims-form-tile .bx--text-area,
+.claims-form-tile .bx--select-input,
+.claims-form-tile .bx--date-picker__input {
+  border: 2px solid #b6c2ff;
+  background: #f7faff;
+  box-shadow: 0 1px 4px rgba(60, 80, 200, 0.04);
+  border-radius: 6px;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.claims-form-tile .bx--text-input:focus,
+.claims-form-tile .bx--text-area:focus,
+.claims-form-tile .bx--select-input:focus,
+.claims-form-tile .bx--date-picker__input:focus {
+  border: 2px solid #3057d5;
+  box-shadow: 0 2px 8px rgba(60, 80, 200, 0.10);
+}
+.cds--text-input{
+  margin-bottom: 10px !important;
+}
+.claims-form-tile .bx--form-item .bx--label {
+  margin-bottom: 8px;
+
+  display: block;
+}
+
+.claims-upload-dotted-box label[for="file-upload"] {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.claims-upload-dotted-box button {
+  margin: 0 auto;
+  display: block;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}
+
+@media (max-width: 1100px) {
+  .claims-form-tile {
+    max-width: 100vw;
+    padding: 24px 12px;
+  }
+}
+@media (max-width: 900px) {
+  .claims-form-tile {
+    max-width: 100vw;
+    padding: 16px 4px;
+  }
+  .claims-form-grid .bx--col-lg-8, .claims-form-grid .bx--col-md-4 {
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+  .claims-form-actions {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 1200px) {
+  .claims-main {
+    padding: 12px 4px;
+    margin-top: 48px;
+  }
+  .claims-form-grid .bx--col-lg-8, .claims-form-grid .bx--col-md-4 {
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+  .claims-section-title {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .claims-main {
+    padding: 12px 4px;
+    margin-top: 56px;
+  }
+  .claims-form-grid .bx--col-lg-8, .claims-form-grid .bx--col-md-4 {
+    max-width: 100% !important;
+    flex: 0 0 100% !important;
+  }
+  .claims-section-title {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+}
+
+.claims-section .bx--grid .bx--col-lg-8 > div,
+.claims-section .bx--grid .bx--col-md-4 > div {
+  margin-bottom: 20px;
+}
+
+/* Remove all box-shadows and border-radius for a flat Carbon look */
+.claims-card, .claims-tile, .claims-box, .claims-table, .claims-summary, .claims-section, .claims-main, .claims-header, .claims-content, .claims-stats, .claims-actions, .claims-search, .claims-filter, .claims-export, .claims-status, .claims-tag, .claims-btn, .claims-search-field {
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.claims-main, .claims-card, .claims-section, .claims-box {
+  background: #f4f4f4;
+  box-shadow: none !important;
+} 

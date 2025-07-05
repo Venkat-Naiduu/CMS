@@ -1,0 +1,222 @@
+/* TopNavigation.css */
+
+.topnav-header {
+    width: 100%;
+    min-width: unset;
+    max-width: 100vw;
+    min-height: 48px;
+    height: 48px;
+    background: #fff;
+    padding-left: 0;
+    padding-right: 32px;
+    box-sizing: border-box;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .topnav-content {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    margin-left: 16px;
+  }
+  
+  .topnav-title-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    margin-right: 40px;
+  }
+  
+  .topnav-claims-heading {
+    font-weight: bold;
+    font-size: 15px;
+    color: #161616;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  
+  .topnav-logo {
+    width: 36px;
+    height: 18px;
+    object-fit: contain;
+    display: block;
+  }
+  
+  .topnav-logo-by {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+  }
+  
+  .topnav-by-text {
+    font-size: 13px;
+    color: #525252;
+    font-weight: 500;
+    margin-left: 2px;
+  }
+  
+  .topnav-nav-bg {
+    background: #f4f4f4;
+    padding: 0;
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+    margin-right: 0;
+    box-shadow: none;
+  }
+  
+  .topnav-nav {
+    flex: 1;
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+  }
+  
+  .topnav-nav ul {
+    display: flex;
+    gap: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    align-items: stretch;
+    height: 100%;
+  }
+  
+  .topnav-nav li {
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+  }
+  
+  .topnav-bar {
+    color: #b0b0b0;
+    font-size: 18px;
+    user-select: none;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    margin: 0 3px;
+  }
+  
+  .topnav-bar-full {
+    width: 1px;
+    background: #d0d0d0;
+    height: 100%;
+    min-height: 32px;
+    margin: 0 0;
+    content: '';
+  }
+  
+  .topnav-nav a {
+    color: #161616;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+    transition: color 0.2s, background 0.2s, transform 0.15s;
+    padding: 6px 14px;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+  
+  .topnav-nav a:hover {
+    color: #161616;
+    background: #e0e0e0;
+    /* transform: scale(1.08); */
+  }
+  
+  .topnav-link-selected {
+    background: #e0e0e0;
+    color: #161616;
+    font-weight: 600;
+  }
+  
+  .topnav-actions {
+    margin-left: 24px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .patientnav-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    height: 48px;
+    min-height: 48px;
+    padding: 0 12px;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .patientnav-action-btn:hover {
+    background: #e0e0e0;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 900px) {
+    .topnav-content {
+      max-width: 100vw;
+      padding-left: 8px;
+      padding-right: 8px;
+      margin-left: 8px;
+    }
+    .topnav-title-logo {
+      margin-right: 16px;
+    }
+    .topnav-nav ul {
+      gap: 16px;
+    }
+    .topnav-claims-heading {
+      font-size: 13px;
+    }
+    .topnav-logo {
+      width: 24px;
+      height: 12px;
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .topnav-header {
+      padding-left: 8px;
+      padding-right: 8px;
+      height: auto;
+      min-height: 40px;
+    }
+    .topnav-content {
+      flex-direction: column;
+      align-items: flex-start;
+      height: auto;
+      padding: 0;
+      margin-left: 0;
+    }
+    .topnav-title-logo {
+      margin-right: 0;
+      margin-bottom: 4px;
+    }
+    .topnav-claims-heading {
+      font-size: 11px;
+    }
+    .topnav-logo {
+      width: 16px;
+      height: 8px;
+    }
+    .topnav-nav ul {
+      flex-direction: column;
+      gap: 8px;
+    }
+    .topnav-actions {
+      margin-left: 0;
+      margin-top: 4px;
+    }
+  } 
