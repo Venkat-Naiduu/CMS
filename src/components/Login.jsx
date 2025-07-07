@@ -12,6 +12,7 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Form submitted!"); // Debug log
     setError("");
     
     if (!username || !password) {
@@ -19,29 +20,38 @@ export default function Login() {
       return;
     }
 
+    console.log("Attempting login with:", { username, password }); // Debug log
+
     try {
-      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '/api';
+      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
+      
       let response, data;
 
       // Try all login endpoints to determine user type
       const loginEndpoints = [
-        { endpoint: '/hospital-login', role: 'hospital' },
-        { endpoint: '/patient-login', role: 'patient' },
-        { endpoint: '/insurance-login', role: 'insurance' }
+        { endpoint: '/api/hospital-login', role: 'hospital' },
+        { endpoint: '/api/patient-login', role: 'patient' },
+        { endpoint: '/api/insurance-login', role: 'insurance' }
       ];
 
       let successfulLogin = null;
 
       for (const loginEndpoint of loginEndpoints) {
         try {
-          console.log(`Trying ${loginEndpoint.endpoint} with username: ${username}`);
-          response = await fetch(`${API_BASE_URL}${loginEndpoint.endpoint}`, {
+          const fullUrl = `${API_BASE_URL}${loginEndpoint.endpoint}`;
+          console.log(`Trying ${fullUrl} with username: ${username}`);
+          
+          response = await fetch(fullUrl, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
             body: JSON.stringify({ username, password }),
           });
 
           console.log(`Response status: ${response.status}`);
+          console.log(`Response headers:`, response.headers);
           
           if (response.ok) {
             data = await response.json();
@@ -50,6 +60,10 @@ export default function Login() {
               successfulLogin = { data, role: loginEndpoint.role };
               break;
             }
+          } else {
+            console.log(`Failed response:`, response.status, response.statusText);
+            const errorText = await response.text();
+            console.log(`Error response body:`, errorText);
           }
         } catch (error) {
           console.error(`Error with ${loginEndpoint.endpoint}:`, error);
@@ -110,7 +124,12 @@ export default function Login() {
             style={{ marginBottom: 24 }}
           />
           {error && <div style={{ color: "#da1e28", marginBottom: 16 }}>{error}</div>}
-          <Button type="submit" kind="primary" style={{ width: "100%" }}>
+          <Button 
+            type="submit" 
+            kind="primary" 
+            style={{ width: "100%" }}
+            onClick={() => console.log("Button clicked!")} // Debug log
+          >
             Login
           </Button>
         </form>

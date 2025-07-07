@@ -172,7 +172,7 @@ Get all claims for a specific insurance company (filtered by insurance provider)
       "id": "CLM-2024-002",
       "patientName": "Jane Smith",
       "submissionDate": "2024-01-20",
-      "amount": "$1,800.00",
+      "amount": "$1,800.00",  
       "status": "In Progress",
       "progress": 60,
       "currentStage": "Medical Necessity & Cost Validation",
@@ -218,48 +218,47 @@ Get fraud detection analytics data for a specific insurance company with paginat
 **Success Response:**
 
 ```json
-{
-  "total": 25,
-  "page": 1,
-  "pageSize": 10,
-  "claims": [
-    {
-      "claim_id": "CLM-2024-001",
-      "status": "HIGH_RISK",
-      "risk_score": 85,
-      "flags": [
-        {
-          "case_type": "CASE 2: Rural Hospital, High-Tech Surgery",
-          "severity": "HIGH"
-        },
-        {
-          "case_type": "CASE 7: Mismatched Diagnosis and Claimed Treatment",
-          "severity": "HIGH"
-        }
-      ],
-      "insuranceProvider": "aetna"
-    },
-    {
-      "claim_id": "CLM-2024-002",
-      "status": "CLEAN",
-      "risk_score": 0,
-      "flags": [],
-      "insuranceProvider": "aetna"
-    },
-    {
-      "claim_id": "CLM-2024-003",
-      "status": "MEDIUM_RISK",
-      "risk_score": 45,
-      "flags": [
-        {
-          "case_type": "CASE 1: Amount Outlier Check",
-          "severity": "MEDIUM"
-        }
-      ],
-      "insuranceProvider": "aetna"
-    }
-  ]
-}
+
+  {
+    
+    "claims": [
+      {
+        "claim_id": "CLM-2024-001",
+        "status": "HIGH_RISK",
+        "risk_score": 85,
+        "flags": [
+          {
+            "case_type": "CASE 2: Rural Hospital, High-Tech Surgery",
+            "severity": "HIGH"
+          },
+          {
+            "case_type": "CASE 7: Mismatched Diagnosis and Claimed Treatment",
+            "severity": "HIGH"
+          }
+        ],
+        "insuranceProvider": "aetna"
+      },
+      {
+        "claim_id": "CLM-2024-002",
+        "status": "CLEAN",
+        "risk_score": 0,
+        "flags": [],
+        "insuranceProvider": "aetna"
+      },
+      {
+        "claim_id": "CLM-2024-003",
+        "status": "MEDIUM_RISK",
+        "risk_score": 45,
+        "flags": [
+          {
+            "case_type": "CASE 1: Amount Outlier Check",
+            "severity": "MEDIUM"
+          }
+        ],
+        "insuranceProvider": "aetna"
+      }
+    ]
+  }
 ```
 
 **Response Fields:**

@@ -44,6 +44,13 @@ export default function ClaimsPatient() {
     treatmentDate: "",
     diagnosis: "",
     treatment: "",
+    hospitalName: "",
+    hospitalLocation: "",
+    procedureName: "",
+    doctorNotes: "",
+    patientMedicalHistory: "",
+    itemizedBill: "",
+    insuranceStartDate: "",
     files: [],
   });
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -57,7 +64,7 @@ export default function ClaimsPatient() {
   
   // Get patient data from login response
   const userData = getUserData();
-  const loggedInPatientName = userData?.name || "Unknown Patient";
+  const loggedInPatientName = userData?.username || userData?.name || "Unknown Patient";
   const loggedInPatientId = userData?.patient_id || "";
 
   useEffect(() => {
@@ -71,6 +78,27 @@ export default function ClaimsPatient() {
       errorNotificationRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }, [showError]);
+
+  // Pre-fill form with user data when component loads
+  useEffect(() => {
+    if (userData && (userData.username || userData.name || userData.patient_id)) {
+      setForm(prev => ({
+        ...prev,
+        patientName: userData.username || userData.name || "",
+        patientId: userData.patient_id || ""
+      }));
+    }
+  }, [userData?.username, userData?.name, userData?.patient_id]);
+
+  // Auto-hide success message after 5 seconds
+  useEffect(() => {
+    if (showSuccess) {
+      const timer = setTimeout(() => {
+        setShowSuccess(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccess]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -87,6 +115,7 @@ export default function ClaimsPatient() {
 
   const handleCancel = () => {
     setShowForm(true);
+    // Reset form and uploaded files
     setForm({
       patientName: "",
       patientId: "",
@@ -98,8 +127,16 @@ export default function ClaimsPatient() {
       treatmentDate: "",
       diagnosis: "",
       treatment: "",
+      hospitalName: "",
+      hospitalLocation: "",
+      procedureName: "",
+      doctorNotes: "",
+      patientMedicalHistory: "",
+      itemizedBill: "",
+      insuranceStartDate: "",
       files: [],
     });
+    setUploadedFiles([]); // Reset uploaded files
   };
 
   const handleSubmit = async (e) => {
@@ -135,7 +172,14 @@ export default function ClaimsPatient() {
       claimAmount: "Claim Amount",
       treatmentDate: "Treatment Date",
       treatment: "Treatment Provided",
-      diagnosis: "Diagnosis"
+      diagnosis: "Diagnosis",
+      hospitalName: "Hospital Name",
+      hospitalLocation: "Hospital Location",
+      procedureName: "Procedure Name",
+      doctorNotes: "Doctor Notes",
+      patientMedicalHistory: "Patient Medical History",
+      itemizedBill: "Itemized Bill",
+      insuranceStartDate: "Insurance Start Date"
     };
 
     const missingFields = [];
@@ -191,11 +235,18 @@ export default function ClaimsPatient() {
         treatmentDate: form.treatmentDate,
         treatmentProvided: form.treatment,
         diagnosis: form.diagnosis,
+        hospitalName: form.hospitalName,
+        hospitalLocation: form.hospitalLocation,
+        procedureName: form.procedureName,
+        doctorNotes: form.doctorNotes,
+        patientMedicalHistory: form.patientMedicalHistory,
+        itemizedBill: form.itemizedBill,
+        insuranceStartDate: form.insuranceStartDate,
         documents: fileInfo // Include file information in payload
       };
       
       // API call to submit patient claim with files
-      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api';
+      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
       const formData = new FormData();
       
       // Add claim data as JSON string (now includes file info)
@@ -206,9 +257,11 @@ export default function ClaimsPatient() {
         formData.append('documents', file);
       });
 
+      const token = localStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/patient-claim`, {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${token}`,
           // Don't set Content-Type for FormData, let browser set it with boundary
         },
         body: formData,
@@ -316,6 +369,7 @@ export default function ClaimsPatient() {
                 statusIconDescription="notification"
                 subtitle="Your claim was submitted successfully."
                 title="Claim Submitted"
+                timeout={5000}
               />
             </div>
           )}
@@ -358,7 +412,6 @@ export default function ClaimsPatient() {
                           <div style={{ width: 300 }}>
                             <TextInput
                               className="input-test-class"
-                              defaultWidth={300}
                               id="patientName"
                               name="patientName"
                               invalidText="Error message goes here"
@@ -375,7 +428,6 @@ export default function ClaimsPatient() {
                           <div style={{ width: 300 }}>
                             <TextInput
                               className="input-test-class"
-                              defaultWidth={300}
                               id="patientId"
                               name="patientId"
                               invalidText="Error message goes here"
@@ -407,7 +459,6 @@ export default function ClaimsPatient() {
                           <div style={{ width: 300 }}>
                             <TextInput
                               className="input-test-class"
-                              defaultWidth={300}
                               id="phone"
                               name="phone"
                               invalidText="Error message goes here"
@@ -433,7 +484,6 @@ export default function ClaimsPatient() {
                           <div style={{ width: 300 }}>
                             <TextInput
                               className="input-test-class"
-                              defaultWidth={300}
                               id="policyNumber"
                               name="policyNumber"
                               invalidText="Error message goes here"
@@ -464,7 +514,6 @@ export default function ClaimsPatient() {
                           <div style={{ width: 300 }}>
                             <TextInput
                               className="input-test-class"
-                              defaultWidth={300}
                               id="claimAmount"
                               name="claimAmount"
                               invalidText="Error message goes here"
@@ -481,6 +530,64 @@ export default function ClaimsPatient() {
                     </FormGroup>
                   </div>
                 </Column>
+                {/* Hospital Information */}
+                <Column sm={4} md={8} lg={16}>
+                  <div className="claims-section">
+                    <div className="claims-section-title">Hospital Information</div>
+                    <FormGroup>
+                      <Grid>
+                        <Column sm={4} md={4} lg={8}>
+                          <div style={{ width: 300 }}>
+                            <TextInput
+                              className="input-test-class"
+                              id="hospitalName"
+                              name="hospitalName"
+                              invalidText="Error message goes here"
+                              warnText="Warning message that is really long can wrap to more lines but should not be excessively long."
+                              labelText="Hospital Name"
+                              placeholder="Enter hospital name"
+                              value={form.hospitalName}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </div>
+                        </Column>
+                        <Column sm={4} md={4} lg={8}>
+                          <div style={{ width: 300 }}>
+                            <TextInput
+                              className="input-test-class"
+                              id="hospitalLocation"
+                              name="hospitalLocation"
+                              invalidText="Error message goes here"
+                              warnText="Warning message that is really long can wrap to more lines but should not be excessively long."
+                              labelText="Hospital Location"
+                              placeholder="Enter hospital location"
+                              value={form.hospitalLocation}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </div>
+                        </Column>
+                        <Column sm={4} md={4} lg={8}>
+                          <DatePicker
+                            datePickerType="single"
+                            value={form.insuranceStartDate}
+                            onChange={(dates) => handleDateChange(dates[0], "insuranceStartDate")}
+                          >
+                            <DatePickerInput
+                              id="insuranceStartDate"
+                              name="insuranceStartDate"
+                              labelText="Insurance Start Date"
+                              placeholder="yyyy-mm-dd"
+                              required
+                            />
+                          </DatePicker>
+                        </Column>
+                      </Grid>
+                    </FormGroup>
+                  </div>
+                </Column>
+
                 {/* Treatment Details */}
                 <Column sm={4} md={8} lg={16}>
                   <div className="claims-section">
@@ -506,7 +613,6 @@ export default function ClaimsPatient() {
                           <div style={{ width: 300 }}>
                             <TextInput
                               className="input-test-class"
-                              defaultWidth={300}
                               id="treatment"
                               name="treatment"
                               invalidText="Error message goes here"
@@ -519,6 +625,22 @@ export default function ClaimsPatient() {
                             />
                           </div>
                         </Column>
+                        <Column sm={4} md={4} lg={8}>
+                          <div style={{ width: 300 }}>
+                            <TextInput
+                              className="input-test-class"
+                              id="procedureName"
+                              name="procedureName"
+                              invalidText="Error message goes here"
+                              warnText="Warning message that is really long can wrap to more lines but should not be excessively long."
+                              labelText="Procedure Name"
+                              placeholder="Enter procedure name"
+                              value={form.procedureName}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </div>
+                        </Column>
                         <Column sm={4} md={8} lg={16}>
                           <TextArea
                             id="diagnosis"
@@ -526,6 +648,50 @@ export default function ClaimsPatient() {
                             labelText="Diagnosis"
                             placeholder="Enter diagnosis details"
                             value={form.diagnosis}
+                            onChange={handleInputChange}
+                            required
+                          />
+                        </Column>
+                      </Grid>
+                    </FormGroup>
+                  </div>
+                </Column>
+
+                {/* Medical Details */}
+                <Column sm={4} md={8} lg={16}>
+                  <div className="claims-section">
+                    <div className="claims-section-title">Medical Details</div>
+                    <FormGroup>
+                      <Grid>
+                        <Column sm={4} md={8} lg={16}>
+                          <TextArea
+                            id="doctorNotes"
+                            name="doctorNotes"
+                            labelText="Doctor Notes"
+                            placeholder="Enter doctor's notes and observations"
+                            value={form.doctorNotes}
+                            onChange={handleInputChange}
+                            required
+                          />
+                        </Column>
+                        <Column sm={4} md={8} lg={16}>
+                          <TextArea
+                            id="patientMedicalHistory"
+                            name="patientMedicalHistory"
+                            labelText="Patient Medical History"
+                            placeholder="Enter relevant patient medical history"
+                            value={form.patientMedicalHistory}
+                            onChange={handleInputChange}
+                            required
+                          />
+                        </Column>
+                        <Column sm={4} md={8} lg={16}>
+                          <TextArea
+                            id="itemizedBill"
+                            name="itemizedBill"
+                            labelText="Itemized Bill"
+                            placeholder="Enter itemized bill details"
+                            value={form.itemizedBill}
                             onChange={handleInputChange}
                             required
                           />

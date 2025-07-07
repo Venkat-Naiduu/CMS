@@ -13,9 +13,11 @@ import {
   TableBody,
   TableCell,
   Tag,
+  DismissibleTag,
+  SelectableTag,
   Button,
 } from "@carbon/react";
-import { User, Wallet, Document, Edit } from "@carbon/icons-react";
+import { User, Wallet, Document, Edit, Checkmark, Warning, Information } from "@carbon/icons-react";
 import "./Patient.css";
 import { getUserData, getAuthToken } from "../utils/auth";
 
@@ -60,6 +62,7 @@ const claimsHeaders = [
 ];
 
 export default function PatientDashboard() {
+
   const userData = getUserData();
   const [policies, setPolicies] = useState([]);
   const [claims, setClaims] = useState([]);
@@ -67,22 +70,42 @@ export default function PatientDashboard() {
   useEffect(() => {
     const fetchPatientDetails = async () => {
       try {
-        const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api';
+        const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
         const token = getAuthToken();
         const patientId = userData?.patient_id;
-        if (!patientId) return;
-        const response = await fetch(`${API_BASE_URL}/patient-details?patient_id=${encodeURIComponent(patientId)}`, {
-          headers: {
+        if (!patientId) {
+      
+          return;
+        }
+        
+        // Try to fetch patient claims using the available endpoint
+            const response = await fetch(`${API_BASE_URL}/patient-details?patient_id=${encodeURIComponent(patientId)}`, {          headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
         });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        setPolicies(data.policies || []);
-        setClaims(data.claims || []);
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Add unique IDs to claims to fix duplicate rendering issue
+          const claimsWithIds = (data.claims || []).map((claim, index) => ({
+            ...claim,
+            id: `${claim.claimNumber}-${index}-${Date.now()}` // Create truly unique ID
+          }));
+          
+          setClaims(claimsWithIds);
+        } else {
+  
+          setClaims([]);
+        }
+        
+        // For now, set empty policies since we don't have that endpoint
+        setPolicies([]);
+        
       } catch (error) {
         console.error('Error fetching patient details:', error);
+  
         setPolicies([]);
         setClaims([]);
       }
@@ -91,14 +114,59 @@ export default function PatientDashboard() {
   }, [userData?.patient_id]);
 
   const getStatusTag = (status) => {
-    const statusMap = {
-      Active: "green",
-      Approved: "green",
-      Processing: "blue",
-      Pending: "cyan",
-      Inactive: "red",
+    const statusConfig = {
+      Active: { type: "green", icon: Checkmark, title: "Active status" },
+      Approved: { type: "green", icon: Checkmark, title: "Approved status" },
+      Processing: { type: "blue", icon: Information, title: "Processing status" },
+      Pending: { type: "cyan", icon: Information, title: "Pending status" },
+      Inactive: { type: "red", icon: Warning, title: "Inactive status" },
+      Rejected: { type: "red", icon: Warning, title: "Rejected status" },
+      UnderReview: { type: "purple", icon: Information, title: "Under review status" },
+      Completed: { type: "green", icon: Checkmark, title: "Completed status" },
+      Cancelled: { type: "cool-gray", icon: Warning, title: "Cancelled status" },
+      Expired: { type: "warm-gray", icon: Warning, title: "Expired status" },
     };
-    return <Tag type={statusMap[status] || "gray"}>{status}</Tag>;
+
+    const config = statusConfig[status] || { type: "gray", icon: Information, title: `${status} status` };
+    const IconComponent = config.icon;
+
+    return (
+      <Tag
+        type={config.type}
+        size="md"
+        title={config.title}
+        renderIcon={IconComponent}
+        className="status-tag"
+      >
+        {status}
+      </Tag>
+    );
+  };
+
+  // Enhanced tag for policy status with more detailed styling
+  const getPolicyStatusTag = (status) => {
+    const statusConfig = {
+      Active: { type: "green", icon: Checkmark, title: "Active policy" },
+      Inactive: { type: "red", icon: Warning, title: "Inactive policy" },
+      Pending: { type: "cyan", icon: Information, title: "Pending policy" },
+      Expired: { type: "warm-gray", icon: Warning, title: "Expired policy" },
+      Suspended: { type: "cool-gray", icon: Warning, title: "Suspended policy" },
+    };
+
+    const config = statusConfig[status] || { type: "gray", icon: Information, title: `${status} policy status` };
+    const IconComponent = config.icon;
+
+    return (
+      <Tag
+        type={config.type}
+        size="md"
+        title={config.title}
+        renderIcon={IconComponent}
+        className="policy-status-tag"
+      >
+        {status}
+      </Tag>
+    );
   };
 
   return (
@@ -117,65 +185,68 @@ export default function PatientDashboard() {
           <Tile style={{ padding: "2rem", background: "#fff", marginBottom: "2rem", borderRadius: 0 }}>
             <div style={{ display: "flex", gap: "1.5rem" }}>
               <Tile style={{ flex: 1, minWidth: 260, background: "#f4f4f4", minHeight: 120, borderRadius: 0, boxShadow: 'none' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, marginBottom: '0.25rem' }}>Patient Name</h3>
-                <p style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>{userData?.name || "-"}</p>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0, marginBottom: '0.5rem', color: '#161616' }}>Active Policy</h3>
+                <p style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0, color: '#525252' }}>{userData?.activepolicy || "-"}</p>
               </Tile>
               <Tile style={{ flex: 1, minWidth: 260, background: "#f4f4f4", minHeight: 120, borderRadius: 0, boxShadow: 'none' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, marginBottom: '0.25rem' }}>Active Policy</h3>
-                <p style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>{userData?.activepolicy || "-"}</p>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0, marginBottom: '0.5rem', color: '#161616' }}>Total Coverage</h3>
+                <p style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0, color: '#525252' }}>{userData?.totalcoverage || "-"}</p>
               </Tile>
               <Tile style={{ flex: 1, minWidth: 260, background: "#f4f4f4", minHeight: 120, borderRadius: 0, boxShadow: 'none' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, marginBottom: '0.25rem' }}>Total Coverage</h3>
-                <p style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>{userData?.totalcoverage || "-"}</p>
-              </Tile>
-              <Tile style={{ flex: 1, minWidth: 260, background: "#f4f4f4", minHeight: 120, borderRadius: 0, boxShadow: 'none' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0, marginBottom: '0.25rem' }}>Monthly Premium</h3>
-                <p style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0 }}>{userData?.monthlypremium || "-"}</p>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0, marginBottom: '0.5rem', color: '#161616' }}>Monthly Premium</h3>
+                <p style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0, color: '#525252' }}>{userData?.monthlypremium || "-"}</p>
               </Tile>
             </div>
           </Tile>
         </Column>
 
+
+
         {/* Recent Insurance Claims Table Only */}
         <Column lg={16} md={8} sm={4}>
-          <Tile style={{ background: '#fff', marginBottom: '2rem', padding: '2rem', borderRadius: 0 }}>
-            <div style={{ background: '#f4f4f4', padding: '1.5rem', borderRadius: 0 }}>
+          <Tile style={{ background: '#fff', marginBottom: '2rem', padding: '2.5rem', borderRadius: 0 }}>
+            <div style={{ background: '#f4f4f4', padding: '2rem', borderRadius: 0 }}>
               {/* Recent Insurance Claims */}
               <Tile style={{ boxShadow: 'none', background: 'transparent', padding: 0, marginBottom: '2.5rem' }}>
                 <div
-                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", marginTop: '2rem' }}
+                  style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", marginBottom: "1.5rem", marginTop: '2rem' }}
                 >
-                  <h2 className="section-title">Recent Insurance Claims</h2>
-                  <Button kind="secondary" size="sm" renderIcon={Document}>
-                    View All Claims
-                  </Button>
+                  <h2 className="section-title" style={{ fontSize: '2rem', fontWeight: 700, margin: 0 }}>Recent Insurance Claims</h2>
                 </div>
-                <DataTable rows={claims} headers={claimsHeaders}>
-                  {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
-                    <TableContainer>
-                      <Table {...getTableProps()}>
-                        <TableHead>
-                          <TableRow>
-                            {headers.map((header) => (
-                              <TableHeader {...getHeaderProps({ header })} key={header.key}>
-                                {header.header}
-                              </TableHeader>
-                            ))}
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {rows.map((row) => (
-                            <TableRow {...getRowProps({ row })} key={row.id}>
-                              {row.cells.map((cell) => (
-                                <TableCell key={cell.id}>{cell.value}</TableCell>
+                                {claims.length > 0 ? (
+                  <DataTable rows={claims} headers={claimsHeaders}>
+                      {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
+                        <TableContainer>
+                          <Table {...getTableProps()}>
+                            <TableHead>
+                              <TableRow>
+                                {headers.map((header) => (
+                                  <TableHeader {...getHeaderProps({ header })} key={header.key}>
+                                    {header.header}
+                                  </TableHeader>
+                                ))}
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {rows.map((row) => (
+                                <TableRow {...getRowProps({ row })} key={row.id}>
+                                  {row.cells.map((cell) => (
+                                    <TableCell key={cell.id}>
+                                      {cell.info.header === 'status' ? getStatusTag(cell.value) : cell.value}
+                                    </TableCell>
+                                  ))}
+                                </TableRow>
                               ))}
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  )}
-                </DataTable>
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                                              )}
+                      </DataTable>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
+                    <p>No claims found. Submit your first claim to see it here.</p>
+                  </div>
+                )}
               </Tile>
             </div>
           </Tile>

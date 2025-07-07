@@ -93,6 +93,82 @@
 }
 cds--cc--chart-wrapper .fill-4-1-1 {
     fill:  #ff9999;}
+
+/* Override Carbon Design System violet colors with orange colors for risk distribution */
+/* Clean - Very Light Orange */
+
+
+/* Removed all chart color overrides to use Carbon Design System defaults */
+
+/* Override legend colors for Risk Distribution */
+/* Clean - Very Light Orange */
+.cds--cc--legend-item[data-name="Clean"] .cds--cc--legend-checkbox {
+    background: #ffd6cc !important;
+    border-color: #ffd6cc !important;
+}
+
+/* Low Risk - Medium Orange */
+.cds--cc--legend-item[data-name="Low Risk"] .cds--cc--legend-checkbox {
+    background: #ffb366 !important;
+    border-color: #ffb366 !important;
+}
+
+/* Medium Risk - Dark Orange */
+.cds--cc--legend-item[data-name="Medium Risk"] .cds--cc--legend-checkbox {
+    background: #ff8533 !important;
+    border-color: #ff8533 !important;
+}
+
+/* High Risk - Very Dark Orange */
+.cds--cc--legend-item[data-name="High Risk"] .cds--cc--legend-checkbox {
+    background: #e65c00 !important;
+    border-color: #e65c00 !important;
+}
+
+/* Override chart colors for Severity Distribution */
+.cds--cc--chart-wrapper .fill-2-1-1 {
+    fill: #87ceeb !important;
+}
+
+.cds--cc--chart-wrapper .fill-2-1-2 {
+    fill: #4682b4 !important;
+}
+
+.cds--cc--chart-wrapper .fill-2-1-3 {
+    fill: #1e3a8a !important;
+}
+
+/* Override legend checkbox background colors for Severity Distribution */
+.cds--cc--chart-wrapper .background-2-1-1 {
+    background-color: #87ceeb !important;
+}
+
+.cds--cc--chart-wrapper .background-2-1-2 {
+    background-color: #4682b4 !important;
+}
+
+.cds--cc--chart-wrapper .background-2-1-3 {
+    background-color: #1e3a8a !important;
+}
+
+/* Override legend colors for Severity Distribution */
+/* Low Severity - Light Sky Blue */
+.cds--cc--legend-item[data-name="Low Severity"] .cds--cc--legend-checkbox {
+    background: #87ceeb !important;
+    border-color: #87ceeb !important;
+}
+
+/* Medium Severity - Medium Sky Blue */
+.cds--cc--legend-item[data-name="Medium Severity"] .cds--cc--legend-checkbox {
+    background: #4682b4 !important;
+    border-color: #4682b4 !important;
+}
+
+/* High Severity - Dark Sky Blue */
+.cds--cc--legend-item[data-name="High Severity"] .cds--cc--legend-checkbox {
+    background: #1e3a8a !important;
+    border-color: #1e3a8a !important;
+}
   @media (max-width: 900px) {
     .fraud-dashboard-heading {
       font-size: 1.3rem;
@@ -578,4 +654,40 @@ cds--cc--chart-wrapper .fill-4-1-1 {
   .compact-table td {
     padding: 0.25rem 0.5rem !important;
     font-size: 0.95rem;
-  } 
+  }
+
+/* Specific rules for risk distribution chart */
+.risk-distribution-chart .cds--cc--chart-wrapper .fill-1-1-1 {
+    fill: #ffd6cc !important; /* Very Light Orange for Clean */
+}
+
+.risk-distribution-chart .cds--cc--chart-wrapper .fill-1-1-2 {
+    fill: #ffb366 !important; /* Medium Orange for Low Risk */
+}
+
+.risk-distribution-chart .cds--cc--chart-wrapper .fill-1-1-3 {
+    fill: #ff8533 !important; /* Dark Orange for Medium Risk */
+}
+
+.risk-distribution-chart .cds--cc--chart-wrapper .fill-1-1-4 {
+    fill: #e65c00 !important; /* Very Dark Orange for High Risk */
+}
+
+/* Force override for any Carbon Design System color */
+.risk-distribution-chart .cds--cc--chart-wrapper [class*="fill-"] {
+    fill: #ffd6cc !important;
+}
+
+.risk-distribution-chart .cds--cc--chart-wrapper [class*="fill-"]:nth-child(2) {
+    fill: #ffb366 !important;
+}
+
+.risk-distribution-chart .cds--cc--chart-wrapper [class*="fill-"]:nth-child(3) {
+    fill: #ff8533 !important;
+}
+
+.risk-distribution-chart .cds--cc--chart-wrapper [class*="fill-"]:nth-child(4) {
+    fill: #e65c00 !important;
+}
+
+ 

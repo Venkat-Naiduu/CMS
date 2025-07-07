@@ -45,6 +45,13 @@ const Claims = () => {
     treatmentDate: "",
     diagnosis: "",
     treatment: "",
+    hospitalName: "",
+    hospitalLocation: "",
+    procedureName: "",
+    doctorNotes: "",
+    patientMedicalHistory: "",
+    itemizedBill: "",
+    insuranceStartDate: "",
     files: [],
   });
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -65,6 +72,27 @@ const Claims = () => {
   useEffect(() => {
     if (showError && errorNotificationRef.current) {
       errorNotificationRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [showError]);
+
+  // Auto-hide success message after 5 seconds
+  useEffect(() => {
+    if (showSuccess) {
+      const timer = setTimeout(() => {
+        setShowSuccess(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccess]);
+
+  // Auto-hide error message after 5 seconds
+  useEffect(() => {
+    if (showError) {
+      const timer = setTimeout(() => {
+        setShowError(false);
+        setErrorMessage("");
+      }, 5000);
+      return () => clearTimeout(timer);
     }
   }, [showError]);
 
@@ -94,6 +122,13 @@ const Claims = () => {
       treatmentDate: "",
       diagnosis: "",
       treatment: "",
+      hospitalName: "",
+      hospitalLocation: "",
+      procedureName: "",
+      doctorNotes: "",
+      patientMedicalHistory: "",
+      itemizedBill: "",
+      insuranceStartDate: "",
       files: [],
     });
   };
@@ -117,7 +152,14 @@ const Claims = () => {
       claimAmount: "Claim Amount",
       treatmentDate: "Treatment Date",
       treatment: "Treatment Provided",
-      diagnosis: "Diagnosis"
+      diagnosis: "Diagnosis",
+      hospitalName: "Hospital Name",
+      hospitalLocation: "Hospital Location",
+      procedureName: "Procedure Name",
+      doctorNotes: "Doctor Notes",
+      patientMedicalHistory: "Patient Medical History",
+      itemizedBill: "Itemized Bill",
+      insuranceStartDate: "Insurance Start Date"
     };
 
     const missingFields = [];
@@ -173,11 +215,18 @@ const Claims = () => {
         treatmentDate: form.treatmentDate,
         treatmentProvided: form.treatment,
         diagnosis: form.diagnosis,
+        hospitalName: form.hospitalName,
+        hospitalLocation: form.hospitalLocation,
+        procedureName: form.procedureName,
+        doctorNotes: form.doctorNotes,
+        patientMedicalHistory: form.patientMedicalHistory,
+        itemizedBill: form.itemizedBill,
+        insuranceStartDate: form.insuranceStartDate,
         documents: fileInfo // Include file information in payload
       };
       
       // API call to submit claim with files
-      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api';
+      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
       const formData = new FormData();
       
       // Add claim data as JSON string (now includes file info)
@@ -342,7 +391,6 @@ const Claims = () => {
                           <div style={{ width: 300 }}>
                             <TextInput
                               className="input-test-class"
-                              defaultWidth={300}
                               id="patientName"
                               name="patientName"
                               invalidText="Error message goes here"
@@ -359,7 +407,6 @@ const Claims = () => {
                           <div style={{ width: 300 }}>
                             <TextInput
                               className="input-test-class"
-                              defaultWidth={300}
                               id="patientId"
                               name="patientId"
                               invalidText="Error message goes here"
@@ -391,7 +438,6 @@ const Claims = () => {
                           <div style={{ width: 300 }}>
                             <TextInput
                               className="input-test-class"
-                              defaultWidth={300}
                               id="phone"
                               name="phone"
                               invalidText="Error message goes here"
@@ -424,7 +470,6 @@ const Claims = () => {
                           <div style={{ width: 300 }}>
                             <TextInput
                               className="input-test-class"
-                              defaultWidth={300}
                               id="policyNumber"
                               name="policyNumber"
                               invalidText="Error message goes here"
@@ -455,7 +500,6 @@ const Claims = () => {
                           <div style={{ width: 300 }}>
                             <TextInput
                               className="input-test-class"
-                              defaultWidth={300}
                               id="claimAmount"
                               name="claimAmount"
                               invalidText="Error message goes here"
@@ -478,6 +522,64 @@ const Claims = () => {
                     </FormGroup>
                   </div>
                 </Column>
+                {/* Hospital Information */}
+                <Column sm={4} md={8} lg={16}>
+                  <div className="claims-section">
+                    <div className="claims-section-title">Hospital Information</div>
+                    <FormGroup>
+                      <Grid>
+                        <Column sm={4} md={4} lg={8}>
+                          <div style={{ width: 300 }}>
+                            <TextInput
+                              className="input-test-class"
+                              id="hospitalName"
+                              name="hospitalName"
+                              invalidText="Error message goes here"
+                              warnText="Warning message that is really long can wrap to more lines but should not be excessively long."
+                              labelText="Hospital Name"
+                              placeholder="Enter hospital name"
+                              value={form.hospitalName}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </div>
+                        </Column>
+                        <Column sm={4} md={4} lg={8}>
+                          <div style={{ width: 300 }}>
+                            <TextInput
+                              className="input-test-class"
+                              id="hospitalLocation"
+                              name="hospitalLocation"
+                              invalidText="Error message goes here"
+                              warnText="Warning message that is really long can wrap to more lines but should not be excessively long."
+                              labelText="Hospital Location"
+                              placeholder="Enter hospital location"
+                              value={form.hospitalLocation}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </div>
+                        </Column>
+                        <Column sm={4} md={4} lg={8}>
+                          <DatePicker
+                            datePickerType="single"
+                            value={form.insuranceStartDate}
+                            onChange={(dates) => handleDateChange(dates[0], "insuranceStartDate")}
+                          >
+                            <DatePickerInput
+                              id="insuranceStartDate"
+                              name="insuranceStartDate"
+                              labelText="Insurance Start Date"
+                              placeholder="yyyy-mm-dd"
+                              required
+                            />
+                          </DatePicker>
+                        </Column>
+                      </Grid>
+                    </FormGroup>
+                  </div>
+                </Column>
+
                 {/* Treatment Details */}
                 <Column sm={4} md={8} lg={16}>
                   <div className="claims-section">
@@ -503,7 +605,6 @@ const Claims = () => {
                           <div style={{ width: 300 }}>
                             <TextInput
                               className="input-test-class"
-                              defaultWidth={300}
                               id="treatment"
                               name="treatment"
                               invalidText="Error message goes here"
@@ -511,6 +612,22 @@ const Claims = () => {
                               labelText="Treatment Provided"
                               placeholder="Describe treatment provided"
                               value={form.treatment}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </div>
+                        </Column>
+                        <Column sm={4} md={4} lg={8}>
+                          <div style={{ width: 300 }}>
+                            <TextInput
+                              className="input-test-class"
+                              id="procedureName"
+                              name="procedureName"
+                              invalidText="Error message goes here"
+                              warnText="Warning message that is really long can wrap to more lines but should not be excessively long."
+                              labelText="Procedure Name"
+                              placeholder="Enter procedure name"
+                              value={form.procedureName}
                               onChange={handleInputChange}
                               required
                             />
@@ -531,6 +648,50 @@ const Claims = () => {
                     </FormGroup>
                   </div>
                 </Column>
+                {/* Medical Details */}
+                <Column sm={4} md={8} lg={16}>
+                  <div className="claims-section">
+                    <div className="claims-section-title">Medical Details</div>
+                    <FormGroup>
+                      <Grid>
+                        <Column sm={4} md={8} lg={16}>
+                          <TextArea
+                            id="doctorNotes"
+                            name="doctorNotes"
+                            labelText="Doctor Notes"
+                            placeholder="Enter doctor's notes and observations"
+                            value={form.doctorNotes}
+                            onChange={handleInputChange}
+                            required
+                          />
+                        </Column>
+                        <Column sm={4} md={8} lg={16}>
+                          <TextArea
+                            id="patientMedicalHistory"
+                            name="patientMedicalHistory"
+                            labelText="Patient Medical History"
+                            placeholder="Enter relevant patient medical history"
+                            value={form.patientMedicalHistory}
+                            onChange={handleInputChange}
+                            required
+                          />
+                        </Column>
+                        <Column sm={4} md={8} lg={16}>
+                          <TextArea
+                            id="itemizedBill"
+                            name="itemizedBill"
+                            labelText="Itemized Bill"
+                            placeholder="Enter itemized bill details"
+                            value={form.itemizedBill}
+                            onChange={handleInputChange}
+                            required
+                          />
+                        </Column>
+                      </Grid>
+                    </FormGroup>
+                  </div>
+                </Column>
+
                 {/* Upload Documents with Dotted Box */}
                 <Column sm={4} md={8} lg={16}>
                   <div className="claims-section">

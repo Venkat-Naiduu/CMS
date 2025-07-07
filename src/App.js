@@ -25,6 +25,8 @@ function AppRoutes() {
   const location = useLocation();
   const { authenticated, role } = useAuth();
 
+
+
   if (!authenticated) {
     if (location.pathname !== "/login") {
       return <Navigate to="/login" replace />;
@@ -43,17 +45,34 @@ function AppRoutes() {
       {role === "hospital" && <TopNavigation />}
       {role === "patient" && <PatientNavigation />}
       <Routes>
+        {/* Hospital routes */}
         {role === "hospital" && <Route path="/" element={<Dashboard />} />}
+        {role === "hospital" && <Route path="/claims" element={<Claims />} />}
+        {role === "hospital" && <Route path="/analytics" element={<Analytics />} />}
+        {role === "hospital" && <Route path="/progress" element={<Progress />} />}
+        
+        {/* Patient routes */}
         {role === "patient" && <Route path="/patient" element={<Patient />} />}
+        {role === "patient" && <Route path="/claims_patient" element={<ClaimsPatient />} />}
+        
+        {/* Insurance routes */}
+        {role === "insurance" && <Route path="/" element={<InsuranceDashboard />} />}
         {role === "insurance" && <Route path="/insurance" element={<InsuranceDashboard />} />}
-        {role === "insurance" && <Route path="*" element={<Navigate to="/insurance" replace />} />}
+        {role === "insurance" && <Route path="/analytics" element={<Analytics />} />}
+        
+        {/* Common routes */}
         <Route path="/test-login" element={<TestLogin />} />
-        <Route path="/claims" element={<Claims />} />
-        <Route path="/analytics" element={<Analytics />} />
-        <Route path="/progress" element={<Progress />} />
-        <Route path="/claims_patient" element={<ClaimsPatient />} />
+        
+        {/* Redirect routes */}
         <Route path="/login" element={<Navigate to={role === "hospital" ? "/" : role === "patient" ? "/patient" : "/insurance"} replace />} />
-        <Route path="*" element={<Navigate to={role === "hospital" ? "/" : role === "patient" ? "/patient" : "/insurance"} replace />} />
+        
+        {/* Fallback route - redirect to appropriate dashboard */}
+        <Route path="*" element={
+          <Navigate 
+            to={role === "hospital" ? "/" : role === "patient" ? "/patient" : "/insurance"} 
+            replace 
+          />
+        } />
       </Routes>
     </>
   );

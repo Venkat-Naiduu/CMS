@@ -13,7 +13,7 @@ const claimStatusStages = [
 ];
 
 const tableHeaders = [
-  { key: "id", header: "Claim ID" },
+  { key: "claimId", header: "Claim ID" },
   { key: "patientName", header: "Patient Name" },
   { key: "submissionDate", header: "Submission Date" },
   { key: "amount", header: "Amount" },
@@ -72,7 +72,7 @@ function downloadClaimReport(row) {
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `claim_${row.id}_report.txt`;
+  a.download = `claim_${row.claimId}_report.txt`;
   a.click();
   window.URL.revokeObjectURL(url);
 }
@@ -95,17 +95,21 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api';
+    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
     const token = getAuthToken();
     const userData = getUserData();
     const insuranceId = userData?.insurance_id;
+    const insuranceName = userData?.insurance_name || userData?.insuranceProvider || insuranceId;
     
-    if (!insuranceId) {
-      console.error('No insurance ID found in user data');
+    if (!insuranceName) {
+      console.error('No insurance name found in user data');
       return;
     }
     
-    fetch(`${API_BASE_URL}/insurance-details?insurance_id=${encodeURIComponent(insuranceId)}`, {
+    console.log('User data:', userData);
+    console.log('Using insurance name:', insuranceName);
+    
+    fetch(`${API_BASE_URL}/insurance-details?insurance_name=${encodeURIComponent(insuranceName)}`, {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
@@ -126,9 +130,16 @@ const Dashboard = () => {
         const approved = claims.filter(claim => claim.status === 'Approved').length;
         const rejected = claims.filter(claim => claim.status === 'Rejected').length;
         const inProgress = claims.filter(claim => 
-          claim.status === 'In Progress' || 
           claim.status === 'Pending' || 
-          claim.status === 'Processing'
+          claim.status === 'In Progress' ||
+          claim.status === 'Initiated' ||
+          claim.status === 'Documents Received' ||
+          claim.status === 'OCR & Data Extraction' ||
+          claim.status === 'Eligibility Check' ||
+          claim.status === 'Fraud Analysis' ||
+          claim.status === 'Medical Necessity & Cost Validation' ||
+          claim.status === 'Claim Under Review' ||
+          claim.status === 'Payment Processing'
         ).length;
         
         setClaimsSummary([
@@ -175,11 +186,11 @@ const Dashboard = () => {
     .filter(row =>
       (!statusFilter || row.status === statusFilter) &&
       (
-        row.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.submissionDate.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.amount.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        row.status.toLowerCase().includes(searchQuery.toLowerCase())
+        (row.claimId || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (row.patientName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (row.submissionDate || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (row.amount || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (row.status || '').toLowerCase().includes(searchQuery.toLowerCase())
       )
     );
   const pagedRows = filteredRows.slice((page - 1) * pageSize, page * pageSize);
@@ -259,8 +270,8 @@ const Dashboard = () => {
                 </TableHead>
                 <TableBody>
                   {pagedRows.map((row) => (
-                    <TableRow key={row.id}>
-                      <TableCell>{row.id}</TableCell>
+                    <TableRow key={row.claimId}>
+                      <TableCell>{row.claimId}</TableCell>
                       <TableCell>{row.patientName}</TableCell>
                       <TableCell>{row.submissionDate}</TableCell>
                       <TableCell>{row.amount}</TableCell>

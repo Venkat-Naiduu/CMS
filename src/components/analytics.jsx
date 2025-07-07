@@ -24,6 +24,16 @@ const statusToGroup = {
   HIGH_RISK: 'High Risk'
 };
 
+const caseTypeDescriptions = {
+  'CASE 1': 'Amount Outlier Check',
+  'CASE 2': 'Rural Hospital, High-Tech Surgery',
+  'CASE 3': 'Pre-existing Disease before Insurance',
+  'CASE 4': 'Multiple Claims in Year',
+  'CASE 5': 'Fake or Unknown Disease',
+  'CASE 6': 'Overdose/Overbilling Detection',
+  'CASE 7': 'Mismatched Diagnosis and Claimed Treatment'
+};
+
 const getRiskScoreColor = (score) => {
   if (score >= 80) return { color: '#fa4d56', fontWeight: 600 };
   if (score >= 60) return { color: '#f1c21b', fontWeight: 600 };
@@ -41,32 +51,40 @@ const Analytics = () => {
   
   // API data state
   const [claimsData, setClaimsData] = useState([]);
+  const [severityDistribution, setSeverityDistribution] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  // Total items state
   const [totalItems, setTotalItems] = useState(0);
+
+  const ROWS_PER_PAGE = 5;
+  const [currentPage, setCurrentPage] = useState(1);
+  const paginatedClaims = claimsData.slice((currentPage - 1) * ROWS_PER_PAGE, currentPage * ROWS_PER_PAGE);
 
   // Fetch analytics data from API
   useEffect(() => {
     const fetchAnalyticsData = async () => {
       try {
         setLoading(true);
-        const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api';
+        const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
         const token = getAuthToken();
         const userData = getUserData();
         const insuranceId = userData?.insurance_id;
+        const insuranceName = userData?.insurance_name || userData?.insuranceProvider || insuranceId;
         
-        if (!insuranceId) {
-          console.error('No insurance ID found in user data');
-          setError('No insurance ID found');
+        if (!insuranceName) {
+          console.error('No insurance name found in user data');
+          setError('No insurance name found');
           setLoading(false);
           return;
         }
         
-        const response = await fetch(`${API_BASE_URL}/analytics?insurance_id=${encodeURIComponent(insuranceId)}&page=${currentPage}&pageSize=${pageSize}`, {
+        console.log('User data:', userData);
+        console.log('Using insurance name:', insuranceName);
+        
+        const response = await fetch(`${API_BASE_URL}/analytics?insurance_name=${encodeURIComponent(insuranceName)}`, {
+        
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
@@ -78,9 +96,14 @@ const Analytics = () => {
         }
         
         const data = await response.json();
-        setClaimsData(data.claims || []);
-        setTotalItems(data.total || 0);
-        setError(null);
+        if (data.success) {
+          setClaimsData(data.claims || []);
+          setSeverityDistribution(data.severity_distribution || {});
+          setTotalItems(data.claims ? data.claims.length : 0);
+          setError(null);
+        } else {
+          throw new Error(data.message || 'Failed to fetch analytics data');
+        }
       } catch (error) {
         console.error('Error fetching analytics data:', error);
         setError('Failed to load analytics data');
@@ -91,12 +114,12 @@ const Analytics = () => {
     };
     
     fetchAnalyticsData();
-  }, [currentPage, pageSize]);
+  }, []);
 
   // Download claim report function
   const downloadClaimReport = async (claimId) => {
     try {
-      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api';
+      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
       const token = getAuthToken();
       
       const response = await fetch(`${API_BASE_URL}/download-report/${claimId}`, {
@@ -165,17 +188,33 @@ ${reportData.analysis_summary}
   };
 
   // Pie chart data for risk distribution (one row per claim)
-  const riskDistributionData = claimsData.map(claim => ({
-    group: statusToGroup[claim.status],
-    claim_id: claim.claim_id,
-    value: 1
-  }));
+  // Sort by risk level to ensure consistent color mapping
+  const riskOrder = { 'Clean': 1, 'Low Risk': 2, 'Medium Risk': 3, 'High Risk': 4 };
+  const riskDistributionData = claimsData
+    .map(claim => ({
+      group: statusToGroup[claim.status],
+      claim_id: claim.claim_id,
+      value: 1,
+      riskOrder: riskOrder[statusToGroup[claim.status]] || 5
+    }))
+    .sort((a, b) => a.riskOrder - b.riskOrder);
+
+  // Create a color mapping based on risk groups
+  const riskColorMap = {
+    'Clean': '#ffd6cc',      // Very light orange
+    'Low Risk': '#ffb366',   // Medium orange  
+    'Medium Risk': '#ff8533', // Dark orange
+    'High Risk': '#e65c00'   // Very dark orange
+  };
+
   const riskDistributionOptions = {
     title: "Risk Distribution",
     resizable: true,
     height: "300px",
     width: "100%",
-    color: { scale: ["#b7e4c7", "#ffe5b4", "#ffd6e0", "#bcdff1"] },
+    color: { 
+      scale: Object.values(riskColorMap)
+    },
     pie: {
       labels: {
         main: {
@@ -187,6 +226,13 @@ ${reportData.analysis_summary}
     },
     toolbar: {
       enabled: false
+    },
+    legend: {
+      enabled: true,
+      position: "bottom"
+    },
+    data: {
+      loading: false
     }
   };
 
@@ -198,7 +244,10 @@ ${reportData.analysis_summary}
       caseTypesCount[caseType] = (caseTypesCount[caseType] || 0) + 1;
     });
   });
-  const caseTypesData = Object.entries(caseTypesCount).map(([type, count]) => ({ group: type, value: count }));
+  const caseTypesData = Object.entries(caseTypesCount).map(([type, count]) => ({ 
+    group: caseTypeDescriptions[type] || type, 
+    value: count 
+  }));
   const caseTypesOptions = {
     title: "Fraud Case Types",
     resizable: true,
@@ -211,41 +260,27 @@ ${reportData.analysis_summary}
   };
 
   // Severity distribution data (percentages)
-  const severityCount = { LOW: 0, MEDIUM: 0, HIGH: 0 };
-  claimsData.forEach(claim => {
-    claim.flags?.forEach(flag => {
-      severityCount[flag.severity]++;
-    });
-  });
   const severityDistributionData = [
-    { group: 'Low Severity', value: severityCount.LOW },
-    { group: 'Medium Severity', value: severityCount.MEDIUM },
-    { group: 'High Severity', value: severityCount.HIGH }
+    { group: 'Low Severity', value: severityDistribution.LOW || 0 },
+    { group: 'Medium Severity', value: severityDistribution.MEDIUM || 0 },
+    { group: 'High Severity', value: severityDistribution.HIGH || 0 }
   ].filter(item => item.value > 0);
   const severityDistributionOptions = {
     title: "Severity Distribution",
     resizable: true,
     height: "300px",
     width: "100%",
-    color: { scale: ["#a6e3b6", "#fde49a", "#fad9d6"] },
+    color: { scale: ["#87ceeb", "#4682b4", "#1e3a8a"] },
     toolbar: {
       enabled: false
     }
   };
 
-  // Table headers
-  const headers = [
-    { key: 'claim_id', header: 'Claim ID' },
-    { key: 'risk_group', header: 'Risk Group' },
-    { key: 'risk_score', header: 'Risk Score' },
-    { key: 'flags', header: 'Fraud Flags' },
-    { key: 'action', header: 'Action' },
-  ];
+
 
   // Calculate summary statistics
   const totalClaims = claimsData.length;
   const cleanClaims = claimsData.filter(claim => claim.status === 'CLEAN').length;
-  const lowRiskClaims = claimsData.filter(claim => claim.status === 'LOW_RISK').length;
   const mediumRiskClaims = claimsData.filter(claim => claim.status === 'MEDIUM_RISK').length;
   const highRiskClaims = claimsData.filter(claim => claim.status === 'HIGH_RISK').length;
 
@@ -254,9 +289,10 @@ ${reportData.analysis_summary}
   claimsData.forEach(claim => {
     claim.flags?.forEach(flag => {
       const caseType = flag.case_type.split(':')[0];
-      if (!caseTypesToClaims[caseType]) caseTypesToClaims[caseType] = [];
-      if (!caseTypesToClaims[caseType].includes(claim.claim_id)) {
-        caseTypesToClaims[caseType].push(claim.claim_id);
+      const caseTypeDesc = caseTypeDescriptions[caseType] || caseType;
+      if (!caseTypesToClaims[caseTypeDesc]) caseTypesToClaims[caseTypeDesc] = [];
+      if (!caseTypesToClaims[caseTypeDesc].includes(claim.claim_id)) {
+        caseTypesToClaims[caseTypeDesc].push(claim.claim_id);
       }
     });
   });
@@ -264,9 +300,9 @@ ${reportData.analysis_summary}
   // Build a list of { claim_id, severity } rows for the table
   const claimSeverityRows = [];
   claimsData.forEach(claim => {
-    claim.flags?.forEach(flag => {
-      claimSeverityRows.push({ claim_id: claim.claim_id, severity: flag.severity });
-    });
+    if (claim.severity) {
+      claimSeverityRows.push({ claim_id: claim.claim_id, severity: claim.severity });
+    }
   });
 
   return (
@@ -406,9 +442,9 @@ ${reportData.analysis_summary}
                     </TableHead>
                     <TableBody>
                       {claimSeverityRows.map((row, idx) => (
-                        <TableRow key={row.claim_id + '-' + row.severity + '-' + idx}>
+                        <TableRow key={row.claim_id + '-' + (row.severity || 'unknown') + '-' + idx}>
                           <TableCell>{row.claim_id}</TableCell>
-                          <TableCell>{row.severity.charAt(0) + row.severity.slice(1).toLowerCase()}</TableCell>
+                          <TableCell>{(row.severity || '').charAt(0) + (row.severity || '').slice(1).toLowerCase()}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -432,74 +468,56 @@ ${reportData.analysis_summary}
               </div>
             ) : (
               <>
-                <TableContainer className="compact-table">
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableHeader>Claim ID</TableHeader>
-                        <TableHeader>Risk Group</TableHeader>
-                        <TableHeader>Risk Score</TableHeader>
-                        <TableHeader style={{ width: 80, textAlign: 'center' }}>Fraud Flags</TableHeader>
-                        <TableHeader>Action</TableHeader>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {claimsData.length === 0 ? (
-                        <TableRow><TableCell colSpan={5}>No claims found.</TableCell></TableRow>
-                      ) : (
-                        claimsData.map((claim) => (
-                          <TableRow key={claim.claim_id}>
-                            <TableCell>{claim.claim_id}</TableCell>
-                            <TableCell>{statusToGroup[claim.status]}</TableCell>
-                            <TableCell><span style={getRiskScoreColor(claim.risk_score)}>{claim.risk_score}</span></TableCell>
-                            <TableCell style={{ width: 80, textAlign: 'center' }}>{claim.flags ? claim.flags.length : 0}</TableCell>
-                            <TableCell>
-                              <OverflowMenu
-                                renderIcon={OverflowMenuVertical}
-                                size="sm"
-                                flipped
-                              >
-                                <OverflowMenuItem
-                                  itemText="See Flags"
-                                  onClick={() => {
-                                    setSelectedFlags(claim.flags);
-                                    setSelectedClaimId(claim.claim_id);
-                                    setShowFlagsModal(true);
-                                  }}
-                                />
-                                                            <OverflowMenuItem
-                              itemText="Download Report"
-                              onClick={() => downloadClaimReport(claim.claim_id)}
-                            />
-                              </OverflowMenu>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                
-                {/* Pagination */}
-                {totalItems > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1rem' }}>
-                    <Pagination
-                      backwardText="Previous page"
-                      forwardText="Next page"
-                      itemsPerPageText="Items per page:"
-                      page={currentPage}
-                      pageNumberText="Page Number"
-                      pageSize={pageSize}
-                      pageSizes={[5, 10, 20, 50]}
-                      size="md"
-                      totalItems={totalItems}
-                      onChange={({ page, pageSize: newPageSize }) => {
-                        setCurrentPage(page);
-                        setPageSize(newPageSize);
-                      }}
-                    />
-                  </div>
-                )}
+                <Table aria-label="Recent Claims Analysis">
+                  <TableHead>
+                    <TableRow>
+                      <TableHeader>Claim ID</TableHeader>
+                      <TableHeader>Risk Group</TableHeader>
+                      <TableHeader>Risk Score</TableHeader>
+                      <TableHeader>Fraud Flags</TableHeader>
+                      <TableHeader>Action</TableHeader>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {paginatedClaims.length === 0 ? (
+                      <TableRow><TableCell colSpan={5}>No claims found.</TableCell></TableRow>
+                    ) : (
+                      paginatedClaims.map((claim) => (
+                        <TableRow key={claim.claim_id}>
+                          <TableCell>{claim.claim_id}</TableCell>
+                          <TableCell>{statusToGroup[claim.status] || 'Unknown'}</TableCell>
+                          <TableCell><span style={getRiskScoreColor(claim.risk_score || 0)}>{claim.risk_score || 0}</span></TableCell>
+                          <TableCell>{claim.flags ? claim.flags.length : 0}</TableCell>
+                          <TableCell>
+                            <OverflowMenu renderIcon={OverflowMenuVertical} size="sm" flipped>
+                              <OverflowMenuItem
+                                itemText="See Flags"
+                                onClick={() => {
+                                  setSelectedFlags(claim.flags);
+                                  setSelectedClaimId(claim.claim_id);
+                                  setShowFlagsModal(true);
+                                }}
+                              />
+                              <OverflowMenuItem
+                                itemText="Download Report"
+                                onClick={() => downloadClaimReport(claim.claim_id)}
+                              />
+                            </OverflowMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+                <Pagination
+                  page={currentPage}
+                  pageSize={ROWS_PER_PAGE}
+                  pageSizes={[ROWS_PER_PAGE]}
+                  totalItems={claimsData.length}
+                  onChange={({ page }) => setCurrentPage(page)}
+                  size="sm"
+                  style={{ marginTop: 16 }}
+                />
               </>
             )}
             <Modal
@@ -512,9 +530,13 @@ ${reportData.analysis_summary}
             >
               {selectedFlags && selectedFlags.length > 0 ? (
                 <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-                  {selectedFlags.map((flag, idx) => (
-                    <li key={idx}>{flag.case_type} <span style={{ fontSize: 12, color: '#888' }}>({flag.severity})</span></li>
-                  ))}
+                  {selectedFlags.map((flag, idx) => {
+                    const caseType = flag.case_type.split(':')[0];
+                    const caseTypeDesc = caseTypeDescriptions[caseType] || flag.case_type;
+                    return (
+                      <li key={idx}>{caseTypeDesc} <span style={{ fontSize: 12, color: '#888' }}>({flag.severity})</span></li>
+                    );
+                  })}
                 </ul>
               ) : (
                 <span style={{ color: '#888' }}>No fraud flags for this claim.</span>

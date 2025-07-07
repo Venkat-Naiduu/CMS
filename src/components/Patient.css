@@ -77,6 +77,21 @@
   font-weight: 700;
 }
 
+/* Enhanced Tag Styles */
+.status-tag {
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 4px;
+}
+
+.policy-status-tag {
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 4px;
+}
+
+
+
 @media (max-width: 900px) {
   .dashboard-header {
     text-align: center;

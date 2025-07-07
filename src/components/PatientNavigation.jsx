@@ -28,6 +28,9 @@ const PatientNavigation = () => {
   const { logout } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
 
+  // Debug logging
+
+
   useEffect(() => {
     // API call to fetch notifications for the patient
     fetch('/api/notifications?role=patient')
@@ -57,12 +60,24 @@ const PatientNavigation = () => {
               {navItems.map((item, idx) => (
                 <React.Fragment key={item.name}>
                   <li>
-                    <Link
-                      to={item.href}
-                      className={location.pathname === item.href ? "topnav-link-selected" : ""}
+                    <button
+                      onClick={() => {
+                        navigate(item.href, { replace: true });
+                      }}
+                      className={`nav-button ${location.pathname === item.href ? "topnav-link-selected" : ""}`}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'inherit',
+                        cursor: 'pointer',
+                        padding: '0.5rem 1rem',
+                        fontSize: 'inherit',
+                        fontFamily: 'inherit',
+                        textDecoration: 'none'
+                      }}
                     >
                       {item.name}
-                    </Link>
+                    </button>
                   </li>
                   <span className="topnav-bar topnav-bar-full" />
                 </React.Fragment>
@@ -71,6 +86,8 @@ const PatientNavigation = () => {
           </nav>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto', gap: '1.5rem', position: 'relative' }}>
+
+          
           <button
             className="patientnav-action-btn"
             aria-label="Notifications"

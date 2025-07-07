@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Test</h1>
+    <form id="loginForm">
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit">Test Login</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            
+            console.log('Testing login with:', { username, password });
+            
+            const loginEndpoints = [
+                { endpoint: '/api/hospital-login', role: 'hospital' },
+                { endpoint: '/api/patient-login', role: 'patient' },
+                { endpoint: '/api/insurance-login', role: 'insurance' }
+            ];
+
+            for (const loginEndpoint of loginEndpoints) {
+                try {
+                    console.log(`Trying ${loginEndpoint.endpoint}`);
+                    const response = await fetch(`http://localhost:8000${loginEndpoint.endpoint}`, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ username, password }),
+                    });
+
+                    console.log(`Response status: ${response.status}`);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log(`Success with ${loginEndpoint.role}:`, data);
+                        resultDiv.innerHTML = `<h3>Success!</h3><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                        return;
+                    } else {
+                        const errorText = await response.text();
+                        console.log(`Failed with ${loginEndpoint.role}:`, response.status, errorText);
+                    }
+                } catch (error) {
+                    console.error(`Error with ${loginEndpoint.endpoint}:`, error);
+                }
+            }
+            
+            resultDiv.innerHTML = '<h3>All login attempts failed</h3>';
+        });
+    </script>
+</body>
+</html> 

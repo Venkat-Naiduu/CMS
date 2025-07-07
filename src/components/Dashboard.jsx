@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Tile, Table, TableHead, TableRow, TableHeader, TableBody, TableCell, Button, ExpandableSearch, Pagination, OverflowMenu, OverflowMenuItem, Select, SelectItem } from "@carbon/react";
-import { Checkmark, Close, Time, Document, Filter, Download } from "@carbon/icons-react";
+import { Tile, Table, TableHead, TableRow, TableHeader, TableBody, TableCell, Button, ExpandableSearch, Pagination, OverflowMenu, OverflowMenuItem, Select, SelectItem, Modal, InlineNotification } from "@carbon/react";
+import { Checkmark, Close, Time, Document, Filter, Download, TrashCan } from "@carbon/icons-react";
 import { Tag } from "@carbon/react";
 import "./Dashboard.css";
 import { getUserData, getAuthToken } from "../utils/auth";
@@ -75,53 +75,6 @@ function downloadClaimReport(row) {
   window.URL.revokeObjectURL(url);
 }
 
-const handleRemoveClaim = async (claimId) => {
-  if (!window.confirm(`Are you sure you want to remove claim ${claimId}?`)) {
-    return;
-  }
-
-  try {
-    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api';
-    const token = getAuthToken();
-    
-    const response = await fetch(`${API_BASE_URL}/hospital-claim/${claimId}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    // Remove the claim from the local state
-    setTableRows(prevRows => prevRows.filter(row => row.id !== claimId));
-    
-    // Recalculate summary counts
-    const updatedClaims = tableRows.filter(row => row.id !== claimId);
-    const total = updatedClaims.length;
-    const approved = updatedClaims.filter(claim => claim.status === "Approved").length;
-    const rejected = updatedClaims.filter(claim => claim.status === "Rejected").length;
-    const inProgress = updatedClaims.filter(claim => 
-      claim.status === "Pending" || claim.status === "In Progress"
-    ).length;
-    
-    setClaimsSummary([
-      { title: "Total Claims Submitted", value: total },
-      { title: "Approved Claims", value: approved },
-      { title: "Rejected Claims", value: rejected },
-      { title: "Claims In Progress", value: inProgress },
-    ]);
-
-    alert(`Claim ${claimId} has been removed successfully.`);
-  } catch (error) {
-    console.error('Error removing claim:', error);
-    alert(`Failed to remove claim: ${error.message}`);
-  }
-};
-
 const Dashboard = () => {
   const [page, setPage] = useState(1);
   const pageSize = 5;
@@ -129,6 +82,11 @@ const Dashboard = () => {
   const [showStatusFilter, setShowStatusFilter] = useState(false);
   const filterRef = useRef(null);
   const dropdownRef = useRef(null);
+
+  // Modal and notification states
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [claimToDelete, setClaimToDelete] = useState(null);
+  const [notification, setNotification] = useState({ show: false, type: 'success', title: '', message: '' });
 
   const userData = getUserData();
   const hospitalid = userData?.hospitalid;
@@ -142,8 +100,96 @@ const Dashboard = () => {
   const [tableRows, setTableRows] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const handleRemoveClaim = async (claimId) => {
+    setClaimToDelete(claimId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!claimToDelete) return;
+
+    try {
+      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
+      const token = getAuthToken();
+      
+      const response = await fetch(`${API_BASE_URL}/hospital-claim/${claimToDelete}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Remove the claim from the local state
+      setTableRows(prevRows => prevRows.filter(row => row.id !== claimToDelete));
+      
+      // Recalculate summary counts
+      const updatedClaims = tableRows.filter(row => row.id !== claimToDelete);
+      const total = updatedClaims.length;
+      const approved = updatedClaims.filter(claim => claim.status === "Approved").length;
+      const rejected = updatedClaims.filter(claim => claim.status === "Rejected").length;
+      const inProgress = updatedClaims.filter(claim => 
+        claim.status === "Pending" || 
+        claim.status === "In Progress" ||
+        claim.status === "Initiated" ||
+        claim.status === "Documents Received" ||
+        claim.status === "OCR & Data Extraction" ||
+        claim.status === "Eligibility Check" ||
+        claim.status === "Fraud Analysis" ||
+        claim.status === "Medical Necessity & Cost Validation" ||
+        claim.status === "Claim Under Review" ||
+        claim.status === "Payment Processing"
+      ).length;
+      
+      setClaimsSummary([
+        { title: "Total Claims Submitted", value: total },
+        { title: "Approved Claims", value: approved },
+        { title: "Rejected Claims", value: rejected },
+        { title: "Claims In Progress", value: inProgress },
+      ]);
+
+      setNotification({
+        show: true,
+        type: 'success',
+        title: 'Success',
+        message: `Claim ${claimToDelete} has been removed successfully.`
+      });
+
+      // Auto-hide notification after 5 seconds
+      setTimeout(() => {
+        setNotification({ show: false, type: 'success', title: '', message: '' });
+      }, 5000);
+
+    } catch (error) {
+      console.error('Error removing claim:', error);
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'Error',
+        message: `Failed to remove claim: ${error.message}`
+      });
+
+      // Auto-hide notification after 5 seconds
+      setTimeout(() => {
+        setNotification({ show: false, type: 'error', title: '', message: '' });
+      }, 5000);
+    } finally {
+      setShowDeleteModal(false);
+      setClaimToDelete(null);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setClaimToDelete(null);
+  };
+
   useEffect(() => {
-    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001/api';
+    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
     const token = getAuthToken();
     
     fetch(`${API_BASE_URL}/hospital-details?hospitalid=${encodeURIComponent(hospitalid)}`, {
@@ -166,7 +212,16 @@ const Dashboard = () => {
         const approved = claims.filter(claim => claim.status === "Approved").length;
         const rejected = claims.filter(claim => claim.status === "Rejected").length;
         const inProgress = claims.filter(claim => 
-          claim.status === "Pending" || claim.status === "In Progress"
+          claim.status === "Pending" || 
+          claim.status === "In Progress" ||
+          claim.status === "Initiated" ||
+          claim.status === "Documents Received" ||
+          claim.status === "OCR & Data Extraction" ||
+          claim.status === "Eligibility Check" ||
+          claim.status === "Fraud Analysis" ||
+          claim.status === "Medical Necessity & Cost Validation" ||
+          claim.status === "Claim Under Review" ||
+          claim.status === "Payment Processing"
         ).length;
         
         setClaimsSummary([
@@ -226,6 +281,19 @@ const Dashboard = () => {
   return (
     <div className="dashboard-main">
       <h2 className="dashboard-heading">Dashboard</h2>
+      
+      {/* Notification */}
+      {notification.show && (
+        <div style={{ marginBottom: '16px' }}>
+          <InlineNotification
+            kind={notification.type}
+            title={notification.title}
+            subtitle={notification.message}
+            onClose={() => setNotification({ show: false, type: 'success', title: '', message: '' })}
+          />
+        </div>
+      )}
+
       <div className="dashboard-main-bg">
         <div className="dashboard-cards-row">
           {claimsSummary.map((card) => (
@@ -304,15 +372,15 @@ const Dashboard = () => {
                     <TableCell>{getStatusTag(row.status)}</TableCell>
                     <TableCell>
                       <OverflowMenu size="sm" flipped>
-                        <OverflowMenuItem itemText="View Details" />
+
                         <OverflowMenuItem itemText="Download Report" onClick={() => downloadClaimReport(row)} />
-                        {(row.status === "Pending" || row.status === "In Progress") && (
-                          <OverflowMenuItem 
-                            itemText="Remove" 
-                            onClick={() => handleRemoveClaim(row.id)}
-                            hasDivider
-                          />
-                        )}
+                        <OverflowMenuItem 
+                          itemText="Remove" 
+                          onClick={() => handleRemoveClaim(row.id)}
+                          hasDivider
+                          renderIcon={TrashCan}
+                          style={{ color: '#da1e28' }}
+                        />
                       </OverflowMenu>
                     </TableCell>
                   </TableRow>
@@ -339,6 +407,24 @@ const Dashboard = () => {
           </Tile>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={showDeleteModal}
+        modalHeading="Confirm Delete"
+        primaryButtonText="Delete"
+        secondaryButtonText="Cancel"
+        primaryButtonDisabled={false}
+        onRequestClose={cancelDelete}
+        onRequestSubmit={confirmDelete}
+        danger
+        size="sm"
+      >
+        <p>
+          Are you sure you want to remove claim <strong>{claimToDelete}</strong>? 
+          This action cannot be undone.
+        </p>
+      </Modal>
     </div>
   );
 };
