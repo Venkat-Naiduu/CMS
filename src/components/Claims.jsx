@@ -25,11 +25,11 @@ import Progress from "./progress";
 
 const insuranceProviders = [
   { value: "", label: "Select provider" },
-  { value: "aetna", label: "Aetna" },
-  { value: "cigna", label: "Cigna" },
-  { value: "united", label: "United Healthcare" },
-  { value: "anthem", label: "Anthem" },
-  { value: "humana", label: "Humana" },
+  { value: "Aetna", label: "Aetna" },
+  { value: "Cigna", label: "Cigna" },
+  { value: "United Healthcare", label: "United Healthcare" },
+  { value: "Anthem", label: "Anthem" },
+  { value: "Humana", label: "Humana" },
 ];
 
 const Claims = () => {
@@ -319,9 +319,9 @@ const Claims = () => {
   return (
     <div className="claims-main">
       <div className="claims-actions-row" style={{ display: 'flex', gap: 16 }}>
-        <Button size="lg" kind={showForm ? "primary" : "secondary"} onClick={() => setShowForm(true)}>
-          New Claim
-        </Button>
+        {/* <Button size="lg" kind={showForm ? "primary" : "secondary"} onClick={() => setShowForm(true)}>
+          New Claim 	
+        </Button> */}
         {/* <Button size="lg" kind={!showForm ? "primary" : "secondary"} onClick={() => setShowForm(false)}>
           Track Progress
         </Button> */}

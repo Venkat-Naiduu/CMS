@@ -172,7 +172,7 @@ Get all claims for a specific insurance company (filtered by insurance provider)
       "id": "CLM-2024-002",
       "patientName": "Jane Smith",
       "submissionDate": "2024-01-20",
-      "amount": "$1,800.00",  
+      "amount": "$1,800.00",
       "status": "In Progress",
       "progress": 60,
       "currentStage": "Medical Necessity & Cost Validation",
@@ -218,47 +218,45 @@ Get fraud detection analytics data for a specific insurance company with paginat
 **Success Response:**
 
 ```json
-
-  {
-    
-    "claims": [
-      {
-        "claim_id": "CLM-2024-001",
-        "status": "HIGH_RISK",
-        "risk_score": 85,
-        "flags": [
-          {
-            "case_type": "CASE 2: Rural Hospital, High-Tech Surgery",
-            "severity": "HIGH"
-          },
-          {
-            "case_type": "CASE 7: Mismatched Diagnosis and Claimed Treatment",
-            "severity": "HIGH"
-          }
-        ],
-        "insuranceProvider": "aetna"
-      },
-      {
-        "claim_id": "CLM-2024-002",
-        "status": "CLEAN",
-        "risk_score": 0,
-        "flags": [],
-        "insuranceProvider": "aetna"
-      },
-      {
-        "claim_id": "CLM-2024-003",
-        "status": "MEDIUM_RISK",
-        "risk_score": 45,
-        "flags": [
-          {
-            "case_type": "CASE 1: Amount Outlier Check",
-            "severity": "MEDIUM"
-          }
-        ],
-        "insuranceProvider": "aetna"
-      }
-    ]
-  }
+{
+  "claims": [
+    {
+      "claim_id": "CLM-2024-001",
+      "status": "HIGH_RISK",
+      "risk_score": 85,
+      "flags": [
+        {
+          "case_type": "CASE 2: Rural Hospital, High-Tech Surgery",
+          "severity": "HIGH"
+        },
+        {
+          "case_type": "CASE 7: Mismatched Diagnosis and Claimed Treatment",
+          "severity": "HIGH"
+        }
+      ],
+      "insuranceProvider": "aetna"
+    },
+    {
+      "claim_id": "CLM-2024-002",
+      "status": "CLEAN",
+      "risk_score": 0,
+      "flags": [],
+      "insuranceProvider": "aetna"
+    },
+    {
+      "claim_id": "CLM-2024-003",
+      "status": "MEDIUM_RISK",
+      "risk_score": 45,
+      "flags": [
+        {
+          "case_type": "CASE 1: Amount Outlier Check",
+          "severity": "MEDIUM"
+        }
+      ],
+      "insuranceProvider": "aetna"
+    }
+  ]
+}
 ```
 
 **Response Fields:**
@@ -613,5 +611,120 @@ uploadedFiles.forEach((file) => {
     "patientName": "Patient name is required",
     "claimAmount": "Invalid claim amount"
   }
+}
+```
+
+---
+
+## 12. Get RFI Details
+
+**GET** `/rfi-details?claim_id=...`
+
+Get the adjudicator's notes and details for a specific RFI request.
+
+**Query Parameter:**
+
+- `claim_id` (required): The unique claim ID to get RFI details for
+
+**Headers:**
+
+```
+Authorization: Bearer <jwt_token>
+```
+
+**Success Response:**
+
+```json
+{
+  "success": true,
+  "claim_id": "PT2080720252",
+  "notes": "Please provide additional medical records for the procedure performed on 2024-01-15. Specifically, we need the operative notes and post-operative care documentation.",
+  "requested_date": "2024-01-25T10:30:00Z",
+  "adjudicator": "Dr. Smith"
+}
+```
+
+**Response Fields:**
+
+- `success`: Boolean indicating if the request was successful
+- `claim_id`: The claim ID for the RFI
+- `notes`: The adjudicator's notes explaining what information is needed
+- `requested_date`: When the RFI was requested
+- `adjudicator`: Name of the adjudicator who requested the information
+
+**Error Response:**
+
+```json
+{
+  "success": false,
+  "message": "RFI details not found for this claim"
+}
+```
+
+---
+
+## 13. Submit RFI Response (Dashboard)
+
+**POST** `/rfi-submit-dashboard`
+
+Submit a response to an RFI request from the hospital dashboard.
+
+**Content-Type:** `multipart/form-data`
+
+**Form Data:**
+
+- `claim_id` (string): The claim ID for the RFI
+- `response` (string): The response text
+- `documents` (file[]): Supporting documents (optional)
+
+**Success Response:**
+
+```json
+{
+  "success": true,
+  "message": "RFI response submitted successfully"
+}
+```
+
+**Error Response:**
+
+```json
+{
+  "success": false,
+  "message": "Failed to submit RFI response"
+}
+```
+
+---
+
+## 14. Submit RFI Response (Patient)
+
+**POST** `/rfi-submit-patient`
+
+Submit a response to an RFI request from the patient portal.
+
+**Content-Type:** `multipart/form-data`
+
+**Form Data:**
+
+- `claim_id` (string): The claim ID for the RFI
+- `response` (string): The response text
+- `documents` (file[]): Supporting documents (optional)
+
+**Success Response:**
+
+```json
+{
+  "success": true,
+  "message": "RFI response submitted successfully"
+}
+```
+
+**Error Response:**
+
+```json
+{
+  "success": false,
+  "message": "Failed to submit RFI response"
 }
 ```

@@ -10,6 +10,7 @@ const navItems = [
   { name: "Dashboard", href: "/" },
 //   { name: "Claims", href: "/claims" },
   { name: "Analytics", href: "/analytics" },
+  { name: "Adjudicator Work Queue", href: "/adjudicator" },
 ];
 
 const iconStyle = { color: '#161616' };
@@ -87,7 +88,7 @@ const Nav_insurance = () => {
               ))}
             </div>
           )}
-          <HeaderGlobalAction aria-label="User Profile" onClick={() => navigate('/admin')}>
+          <HeaderGlobalAction aria-label="User Profile" style={{ cursor: 'default' }}>
             <UserAvatar />
           </HeaderGlobalAction>
           <HeaderGlobalAction aria-label="Logout" onClick={() => { logout(); navigate("/login"); }}>

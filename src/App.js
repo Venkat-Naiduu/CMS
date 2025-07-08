@@ -10,6 +10,8 @@ import Login from "./components/Login";
 import Analytics from "./components/analytics";
 import InsuranceDashboard from "./components/dashboard_insurance";
 import TestLogin from "./components/TestLogin";
+import Adjudicator from "./components/Adjudicator";
+import Nav_insurance from "./components/nav_insurance";
 
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 
@@ -44,6 +46,7 @@ function AppRoutes() {
     <>
       {role === "hospital" && <TopNavigation />}
       {role === "patient" && <PatientNavigation />}
+      {role === "insurance" && <Nav_insurance />}
       <Routes>
         {/* Hospital routes */}
         {role === "hospital" && <Route path="/" element={<Dashboard />} />}
@@ -59,6 +62,7 @@ function AppRoutes() {
         {role === "insurance" && <Route path="/" element={<InsuranceDashboard />} />}
         {role === "insurance" && <Route path="/insurance" element={<InsuranceDashboard />} />}
         {role === "insurance" && <Route path="/analytics" element={<Analytics />} />}
+        {role === "insurance" && <Route path="/adjudicator" element={<Adjudicator />} />}
         
         {/* Common routes */}
         <Route path="/test-login" element={<TestLogin />} />

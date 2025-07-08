@@ -16,6 +16,7 @@ import {
   DismissibleTag,
   SelectableTag,
   Button,
+  Modal,
 } from "@carbon/react";
 import { User, Wallet, Document, Edit, Checkmark, Warning, Information } from "@carbon/icons-react";
 import "./Patient.css";
@@ -66,6 +67,12 @@ export default function PatientDashboard() {
   const userData = getUserData();
   const [policies, setPolicies] = useState([]);
   const [claims, setClaims] = useState([]);
+  const [showRfiModal, setShowRfiModal] = useState(false);
+  const [rfiClaimId, setRfiClaimId] = useState('');
+  const [rfiResponse, setRfiResponse] = useState('');
+  const [rfiFiles, setRfiFiles] = useState([]);
+  const [rfiLoading, setRfiLoading] = useState(false);
+  const [rfiNotes, setRfiNotes] = useState(''); // Add state for RFI notes
 
   useEffect(() => {
     const fetchPatientDetails = async () => {
@@ -87,6 +94,7 @@ export default function PatientDashboard() {
         
         if (response.ok) {
           const data = await response.json();
+          console.log('Patient details response:', data); // Debug log
           
           // Add unique IDs to claims to fix duplicate rendering issue
           const claimsWithIds = (data.claims || []).map((claim, index) => ({
@@ -94,7 +102,18 @@ export default function PatientDashboard() {
             id: `${claim.claimNumber}-${index}-${Date.now()}` // Create truly unique ID
           }));
           
+          console.log('Processed claims:', claimsWithIds); // Debug log
           setClaims(claimsWithIds);
+          
+          // Store RFI notes in localStorage if found
+          claimsWithIds.forEach(claim => {
+            if (claim.status === 'RFI' && claim.notes) {
+              storeRfiNotes(claim.claimNumber, claim.notes);
+            }
+            if (claim.status === 'RFI' && claim.claim_details?.notes) {
+              storeRfiNotes(claim.claimNumber, claim.claim_details.notes);
+            }
+          });
         } else {
   
           setClaims([]);
@@ -125,6 +144,7 @@ export default function PatientDashboard() {
       Completed: { type: "green", icon: Checkmark, title: "Completed status" },
       Cancelled: { type: "cool-gray", icon: Warning, title: "Cancelled status" },
       Expired: { type: "warm-gray", icon: Warning, title: "Expired status" },
+      RFI: { type: "blue", icon: Information, title: "Request for Information" },
     };
 
     const config = statusConfig[status] || { type: "gray", icon: Information, title: `${status} status` };
@@ -167,6 +187,105 @@ export default function PatientDashboard() {
         {status}
       </Tag>
     );
+  };
+
+  const handleRfiFileChange = (e) => {
+    setRfiFiles(Array.from(e.target.files));
+  };
+
+  // Function to store RFI notes in localStorage
+  const storeRfiNotes = (claimId, notes) => {
+    try {
+      const rfiNotes = JSON.parse(localStorage.getItem('rfiNotes') || '{}');
+      rfiNotes[claimId] = notes;
+      localStorage.setItem('rfiNotes', JSON.stringify(rfiNotes));
+      console.log(`Stored RFI notes for claim ${claimId}:`, notes);
+    } catch (error) {
+      console.error('Error storing RFI notes:', error);
+    }
+  };
+
+  // Function to get RFI notes from localStorage
+  const getRfiNotes = (claimId) => {
+    try {
+      const rfiNotes = JSON.parse(localStorage.getItem('rfiNotes') || '{}');
+      return rfiNotes[claimId] || null;
+    } catch (error) {
+      console.error('Error getting RFI notes:', error);
+      return null;
+    }
+  };
+
+  // Global function to store RFI notes (can be called from console for testing)
+  useEffect(() => {
+    window.storeRfiNotesForTesting = (claimId, notes) => {
+      storeRfiNotes(claimId, notes);
+    };
+    window.getRfiNotesForTesting = (claimId) => {
+      return getRfiNotes(claimId);
+    };
+  }, []);
+
+  const handleOpenRfiModal = (claimId) => {
+    // Find the claim in the claims array to get the notes
+    const claim = claims.find(c => c.claimNumber === claimId);
+    console.log('Found claim:', claim); // Debug log
+    console.log('All claims:', claims); // Debug log
+    
+    // Try multiple possible locations for notes
+    let notes = claim?.notes || 
+                claim?.claim_details?.notes || 
+                claim?.adjudicator_notes ||
+                claim?.rfi_notes ||
+                getRfiNotes(claimId) || // Check localStorage
+                null;
+    
+    console.log('Extracted notes from local data:', notes); // Debug log
+    
+    // If no notes found, show a default message
+    if (!notes) {
+      notes = 'Please provide the requested information to proceed with your claim.';
+    }
+    
+    console.log('Final notes to display:', notes); // Debug log
+    
+    setRfiClaimId(claimId);
+    setRfiResponse('');
+    setRfiFiles([]);
+    setRfiNotes(notes);
+    setShowRfiModal(true);
+  };
+
+  const handleCloseRfiModal = () => {
+    setShowRfiModal(false);
+    setRfiClaimId('');
+    setRfiResponse('');
+    setRfiFiles([]);
+    setRfiNotes(''); // Clear notes when closing
+  };
+
+  const handleSubmitRfi = async () => {
+    setRfiLoading(true);
+    try {
+      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
+      const token = getAuthToken();
+      const formData = new FormData();
+      formData.append('claim_id', rfiClaimId);
+      formData.append('response', rfiResponse);
+      rfiFiles.forEach((file) => formData.append('documents', file));
+      const res = await fetch(`${API_BASE_URL}/api/rfi-patient`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      if (!res.ok) throw new Error('Failed to submit RFI response');
+      handleCloseRfiModal();
+      alert('RFI response submitted successfully!');
+    } catch (err) {
+      alert('Failed to submit RFI response.');
+    } finally {
+      setRfiLoading(false);
+    }
   };
 
   return (
@@ -225,6 +344,7 @@ export default function PatientDashboard() {
                                     {header.header}
                                   </TableHeader>
                                 ))}
+                                <TableHeader>Action</TableHeader>
                               </TableRow>
                             </TableHead>
                             <TableBody>
@@ -235,6 +355,13 @@ export default function PatientDashboard() {
                                       {cell.info.header === 'status' ? getStatusTag(cell.value) : cell.value}
                                     </TableCell>
                                   ))}
+                                  <TableCell>
+                                    {row.cells.find(cell => cell.info.header === 'status')?.value === 'RFI' ? (
+                                      <Button size="sm" kind="primary" onClick={() => handleOpenRfiModal(row.cells.find(cell => cell.info.header === 'claimNumber')?.value)}>
+                                        Respond to RFI
+                                      </Button>
+                                    ) : null}
+                                  </TableCell>
                                 </TableRow>
                               ))}
                             </TableBody>
@@ -252,6 +379,55 @@ export default function PatientDashboard() {
           </Tile>
         </Column>
       </Grid>
+      <Modal
+        open={showRfiModal}
+        modalHeading={`Respond to RFI for Claim ${rfiClaimId}`}
+        primaryButtonText="Submit"
+        secondaryButtonText="Cancel"
+        onRequestClose={handleCloseRfiModal}
+        onRequestSubmit={handleSubmitRfi}
+        passiveModal={false}
+        preventCloseOnClickOutside={true}
+        primaryButtonDisabled={rfiLoading}
+        secondaryButtonDisabled={rfiLoading}
+      >
+        <div style={{ marginBottom: 16 }}>
+          <strong>Claim ID:</strong> {rfiClaimId}
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label><strong>Information Requested:</strong></label>
+          <div style={{ 
+            padding: '8px', 
+            backgroundColor: '#f4f4f4', 
+            borderRadius: '4px', 
+            marginTop: 4,
+            minHeight: '60px',
+            whiteSpace: 'pre-wrap'
+          }}>
+            {rfiNotes}
+          </div>
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label>Your Response:</label>
+          <textarea
+            style={{ width: '100%', minHeight: 80, marginTop: 4 }}
+            value={rfiResponse}
+            onChange={e => setRfiResponse(e.target.value)}
+            disabled={rfiLoading}
+            placeholder="Please provide the requested information..."
+          />
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label>Upload Documents:</label>
+          <input
+            type="file"
+            multiple
+            onChange={handleRfiFileChange}
+            disabled={rfiLoading}
+            style={{ display: 'block', marginTop: 4 }}
+          />
+        </div>
+      </Modal>
     </div>
   );
 } 

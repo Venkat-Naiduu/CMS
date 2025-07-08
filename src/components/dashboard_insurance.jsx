@@ -274,7 +274,7 @@ const Dashboard = () => {
                       <TableCell>{row.claimId}</TableCell>
                       <TableCell>{row.patientName}</TableCell>
                       <TableCell>{row.submissionDate}</TableCell>
-                      <TableCell>{row.amount}</TableCell>
+                      <TableCell>{row.amount ? row.amount.replace(/\$/g, '') : ''}</TableCell>
                       <TableCell>{getStatusTag(row.status)}</TableCell>
                       <TableCell>
                         <div style={{ minWidth: 90, display: 'flex', alignItems: 'center', gap: 8 }}>

@@ -14,14 +14,16 @@ const statusToTag = {
   CLEAN: <Tag type="green">Clean</Tag>,
   LOW_RISK: <Tag type="cool-gray">Low Risk</Tag>,
   MEDIUM_RISK: <Tag type="yellow">Medium Risk</Tag>,
-  HIGH_RISK: <Tag type="red">High Risk</Tag>
+  HIGH_RISK: <Tag type="red">High Risk</Tag>,
+  RFI: <Tag type="blue">RFI</Tag>
 };
 
 const statusToGroup = {
   CLEAN: 'Clean',
   LOW_RISK: 'Low Risk',
   MEDIUM_RISK: 'Medium Risk',
-  HIGH_RISK: 'High Risk'
+  HIGH_RISK: 'High Risk',
+  RFI: 'RFI'
 };
 
 const caseTypeDescriptions = {
@@ -48,6 +50,12 @@ const Analytics = () => {
   const [showFlagsModal, setShowFlagsModal] = useState(false);
   const [selectedFlags, setSelectedFlags] = useState([]);
   const [selectedClaimId, setSelectedClaimId] = useState('');
+  const [showRfiModal, setShowRfiModal] = useState(false);
+  const [rfiClaimId, setRfiClaimId] = useState('');
+  const [rfiResponse, setRfiResponse] = useState('');
+  const [rfiFiles, setRfiFiles] = useState([]);
+  const [rfiLoading, setRfiLoading] = useState(false);
+  const [rfiNotes, setRfiNotes] = useState(''); // Add state for RFI notes
   
   // API data state
   const [claimsData, setClaimsData] = useState([]);
@@ -187,25 +195,44 @@ ${reportData.analysis_summary}
     }
   };
 
-  // Pie chart data for risk distribution (one row per claim)
-  // Sort by risk level to ensure consistent color mapping
-  const riskOrder = { 'Clean': 1, 'Low Risk': 2, 'Medium Risk': 3, 'High Risk': 4 };
+  // Helper to get risk group from risk_score
+  function getRiskGroup(risk_score) {
+    if (typeof risk_score !== 'number') return 'Unknown';
+    if (risk_score >= 70) return 'High Risk';
+    if (risk_score >= 35) return 'Medium Risk';
+    if (risk_score >= 5) return 'Low Risk';
+    return 'Clean';
+  }
+
+  // Risk distribution data for pie chart and table, based on risk_score
   const riskDistributionData = claimsData
     .map(claim => ({
-      group: statusToGroup[claim.status],
+      group: getRiskGroup(claim.risk_score),
       claim_id: claim.claim_id,
       value: 1,
-      riskOrder: riskOrder[statusToGroup[claim.status]] || 5
+      risk_score: claim.risk_score
     }))
-    .sort((a, b) => a.riskOrder - b.riskOrder);
+    .sort((a, b) => b.risk_score - a.risk_score);
 
   // Create a color mapping based on risk groups
   const riskColorMap = {
-    'Clean': '#ffd6cc',      // Very light orange
-    'Low Risk': '#ffb366',   // Medium orange  
-    'Medium Risk': '#ff8533', // Dark orange
-    'High Risk': '#e65c00'   // Very dark orange
+    'Clean': '#ffe5b4',      // Very light orange
+    'Low Risk': '#f1c21b',  // Yellow
+    'Medium Risk': '#ff832b', // Orange
+    'High Risk': '#fa4d56'   // Red-Orange
   };
+
+  // Group and count claims by risk group for pie chart
+  const riskGroupCounts = claimsData.reduce((acc, claim) => {
+    const group = getRiskGroup(claim.risk_score);
+    acc[group] = (acc[group] || 0) + 1;
+    return acc;
+  }, {});
+  const riskPieData = Object.entries(riskGroupCounts).map(([group, count]) => ({
+    group,
+    value: count
+  }));
+  const riskPieTotal = claimsData.length;
 
   const riskDistributionOptions = {
     title: "Risk Distribution",
@@ -213,13 +240,16 @@ ${reportData.analysis_summary}
     height: "300px",
     width: "100%",
     color: { 
-      scale: Object.values(riskColorMap)
+      scale: [riskColorMap['Clean'], riskColorMap['Low Risk'], riskColorMap['Medium Risk'], riskColorMap['High Risk']]
     },
     pie: {
       labels: {
         main: {
           enabled: true,
-          formatter: (d) => `${d.claim_id} (${d.group})`
+          formatter: (d) => {
+            const percent = riskPieTotal ? ((d.value / riskPieTotal) * 100).toFixed(0) : 0;
+            return `${d.group} (${percent}%)`;
+          }
         },
         value: { enabled: false }
       }
@@ -276,13 +306,12 @@ ${reportData.analysis_summary}
     }
   };
 
-
-
   // Calculate summary statistics
   const totalClaims = claimsData.length;
-  const cleanClaims = claimsData.filter(claim => claim.status === 'CLEAN').length;
-  const mediumRiskClaims = claimsData.filter(claim => claim.status === 'MEDIUM_RISK').length;
-  const highRiskClaims = claimsData.filter(claim => claim.status === 'HIGH_RISK').length;
+  const cleanClaims = claimsData.filter(claim => getRiskGroup(claim.risk_score) === 'Clean').length;
+  const lowRiskClaims = claimsData.filter(claim => getRiskGroup(claim.risk_score) === 'Low Risk').length;
+  const mediumRiskClaims = claimsData.filter(claim => getRiskGroup(claim.risk_score) === 'Medium Risk').length;
+  const highRiskClaims = claimsData.filter(claim => getRiskGroup(claim.risk_score) === 'High Risk').length;
 
   // Build a mapping from case type to claim IDs
   const caseTypesToClaims = {};
@@ -305,6 +334,54 @@ ${reportData.analysis_summary}
     }
   });
 
+  const handleRfiFileChange = (e) => {
+    setRfiFiles(Array.from(e.target.files));
+  };
+
+  const handleOpenRfiModal = (claimId) => {
+    // Find the claim in the claimsData array to get the notes
+    const claim = claimsData.find(c => c.claim_id === claimId);
+    const notes = claim?.notes || 'No additional information provided.';
+    
+    setRfiClaimId(claimId);
+    setRfiResponse('');
+    setRfiFiles([]);
+    setRfiNotes(notes);
+    setShowRfiModal(true);
+  };
+
+  const handleCloseRfiModal = () => {
+    setShowRfiModal(false);
+    setRfiClaimId('');
+    setRfiResponse('');
+    setRfiFiles([]);
+    setRfiNotes(''); // Clear notes when closing
+  };
+
+  const handleSubmitRfi = async () => {
+    setRfiLoading(true);
+    try {
+      const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
+      const token = getAuthToken();
+      const formData = new FormData();
+      formData.append('claim_id', rfiClaimId);
+      formData.append('response', rfiResponse);
+      rfiFiles.forEach((file) => formData.append('documents', file));
+      const res = await fetch(`${API_BASE_URL}/rfi-submit-dashboard`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      if (!res.ok) throw new Error('Failed to submit RFI response');
+      handleCloseRfiModal();
+      alert('RFI response submitted successfully!');
+    } catch (err) {
+      alert('Failed to submit RFI response.');
+    } finally {
+      setRfiLoading(false);
+    }
+  };
+
   return (
     <>
       <Nav_insurance />
@@ -316,16 +393,34 @@ ${reportData.analysis_summary}
         {/* Summary Tiles */}
         <div className="dashboard-row dashboard-tiles">
           <div className="dashboard-col">
-            <Tile className="summary-tile"> <div>Total Claims</div> <div className="tile-value">{totalClaims}</div> </Tile>
+            <Tile className="summary-tile" style={{ background: '#f4f4f4', minHeight: 100, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+              <div style={{ fontWeight: 600, marginBottom: 8 }}>Total Claims</div>
+              <div className="tile-value" style={{ fontSize: 32, fontWeight: 700, textAlign: 'center', color: '#161616' }}>{totalClaims}</div>
+            </Tile>
           </div>
           <div className="dashboard-col">
-            <Tile className="summary-tile"> <div>Clean Claims</div> <div className="tile-value">{cleanClaims}</div> </Tile>
+            <Tile className="summary-tile" style={{ background: '#f4f4f4', minHeight: 100, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+              <div style={{ fontWeight: 600, marginBottom: 8 }}>Clean Claims</div>
+              <div className="tile-value" style={{ fontSize: 32, fontWeight: 700, textAlign: 'center', color: '#24a148' }}>{cleanClaims}</div>
+            </Tile>
           </div>
           <div className="dashboard-col">
-            <Tile className="summary-tile"> <div>Risky Claims</div> <div className="tile-value">{mediumRiskClaims + highRiskClaims}</div> </Tile>
+            <Tile className="summary-tile" style={{ background: '#f4f4f4', minHeight: 100, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+              <div style={{ fontWeight: 600, marginBottom: 8 }}>Low Risk Claims</div>
+              <div className="tile-value" style={{ fontSize: 32, fontWeight: 700, textAlign: 'center', color: '#f1c21b' }}>{lowRiskClaims}</div>
+            </Tile>
           </div>
           <div className="dashboard-col">
-            <Tile className="summary-tile"> <div>High Risk Claims</div> <div className="tile-value">{highRiskClaims}</div> </Tile>
+            <Tile className="summary-tile" style={{ background: '#f4f4f4', minHeight: 100, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+              <div style={{ fontWeight: 600, marginBottom: 8 }}>Medium Risk Claims</div>
+              <div className="tile-value" style={{ fontSize: 32, fontWeight: 700, textAlign: 'center', color: '#ff832b' }}>{mediumRiskClaims}</div>
+            </Tile>
+          </div>
+          <div className="dashboard-col">
+            <Tile className="summary-tile" style={{ background: '#f4f4f4', minHeight: 100, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+              <div style={{ fontWeight: 600, marginBottom: 8 }}>High Risk Claims</div>
+              <div className="tile-value" style={{ fontSize: 32, fontWeight: 700, textAlign: 'center', color: '#fa4d56' }}>{highRiskClaims}</div>
+            </Tile>
           </div>
         </div>
         {/* Charts Section */}
@@ -341,10 +436,10 @@ ${reportData.analysis_summary}
                   onClick={() => setShowRiskTable(true)}
                 />
               </div>
-              <PieChart data={riskDistributionData} options={riskDistributionOptions} />
+              <PieChart data={riskPieData} options={riskDistributionOptions} />
               <Modal
                 open={showRiskTable}
-                modalHeading="Claims by Risk Group"
+                modalHeading="Risk Distribution Table"
                 primaryButtonText="Close"
                 onRequestClose={() => setShowRiskTable(false)}
                 onRequestSubmit={() => setShowRiskTable(false)}
@@ -359,10 +454,10 @@ ${reportData.analysis_summary}
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {claimsData.map((claim) => (
-                        <TableRow key={claim.claim_id}>
-                          <TableCell>{claim.claim_id}</TableCell>
-                          <TableCell>{statusToGroup[claim.status]}</TableCell>
+                      {riskDistributionData.map((row, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell>{row.claim_id}</TableCell>
+                          <TableCell>{row.group}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -373,15 +468,6 @@ ${reportData.analysis_summary}
           </div>
           <div className="dashboard-chart-col">
             <Tile>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 8 }}>
-                <Menu
-                  style={{ cursor: 'pointer' }}
-                  size={24}
-                  aria-label="Show as table"
-                  title="Show as table"
-                  onClick={() => setShowFraudCasesTable(true)}
-                />
-              </div>
               <PieChart data={caseTypesData} options={caseTypesOptions} />
               <Modal
                 open={showFraudCasesTable}
@@ -412,103 +498,68 @@ ${reportData.analysis_summary}
               </Modal>
             </Tile>
           </div>
-          <div className="dashboard-chart-col">
-            <Tile>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 8 }}>
-                <Menu
-                  style={{ cursor: 'pointer' }}
-                  size={24}
-                  aria-label="Show as table"
-                  title="Show as table"
-                  onClick={() => setShowSeverityTable(true)}
-                />
-              </div>
-              <PieChart data={severityDistributionData} options={severityDistributionOptions} />
-              <Modal
-                open={showSeverityTable}
-                modalHeading="Severity Distribution by Claim"
-                primaryButtonText="Close"
-                onRequestClose={() => setShowSeverityTable(false)}
-                onRequestSubmit={() => setShowSeverityTable(false)}
-                passiveModal
-              >
-                <TableContainer>
-                  <Table>
-                    <TableHead>
-                      <TableRow>
-                        <TableHeader>Claim ID</TableHeader>
-                        <TableHeader>Severity</TableHeader>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {claimSeverityRows.map((row, idx) => (
-                        <TableRow key={row.claim_id + '-' + (row.severity || 'unknown') + '-' + idx}>
-                          <TableCell>{row.claim_id}</TableCell>
-                          <TableCell>{(row.severity || '').charAt(0) + (row.severity || '').slice(1).toLowerCase()}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Modal>
-            </Tile>
-          </div>
         </div>
         {/* Recent Claims Table */}
-        <div className="dashboard-row dashboard-table">
-          <Tile>
-            <h3>Recent Claims Analysis</h3>
-            {loading ? (
-              <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <p>Loading analytics data...</p>
-              </div>
-            ) : error ? (
-              <div style={{ textAlign: 'center', padding: '2rem', color: '#da1e28' }}>
-                <p>{error}</p>
-              </div>
-            ) : (
-              <>
-                <Table aria-label="Recent Claims Analysis">
-                  <TableHead>
-                    <TableRow>
-                      <TableHeader>Claim ID</TableHeader>
-                      <TableHeader>Risk Group</TableHeader>
-                      <TableHeader>Risk Score</TableHeader>
-                      <TableHeader>Fraud Flags</TableHeader>
-                      <TableHeader>Action</TableHeader>
+        <div className="dashboard-row dashboard-table-row">
+          <Tile className="dashboard-table-tile" style={{ width: '100%' }}>
+            <TableContainer style={{ width: '100%' }}>
+              <Table aria-label="Recent Claims" style={{ width: '100%' }}>
+                <TableHead>
+                  <TableRow>
+                    <TableHeader>Claim ID</TableHeader>
+                    <TableHeader>Patient Name</TableHeader>
+                    <TableHeader>Risk Group</TableHeader>
+                    <TableHeader>Risk Score</TableHeader>
+                    <TableHeader>Flags</TableHeader>
+                    <TableHeader>Action</TableHeader>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {paginatedClaims.map((claim) => (
+                    <TableRow key={claim.claim_id}>
+                      <TableCell>{claim.claim_id}</TableCell>
+                      <TableCell>{claim.patientName || claim.name}</TableCell>
+                      <TableCell>{getRiskGroup(claim.risk_score)}</TableCell>
+                      <TableCell>
+                        <span style={{
+                          fontWeight: 700,
+                          color:
+                            getRiskGroup(claim.risk_score) === 'High Risk' ? '#fa4d56' :
+                            getRiskGroup(claim.risk_score) === 'Medium Risk' ? '#f1c21b' :
+                            getRiskGroup(claim.risk_score) === 'Low Risk' ? '#ff832b' :
+                            '#24a148'
+                        }}>
+                          {typeof claim.risk_score === 'number' ? claim.risk_score : '-'}
+                        </span>
+                      </TableCell>
+                      <TableCell>{claim.flags ? claim.flags.length : 0}</TableCell>
+                      <TableCell>
+                        <OverflowMenu renderIcon={OverflowMenuVertical} size="sm" flipped>
+                          <OverflowMenuItem
+                            itemText="View Flags"
+                            onClick={() => {
+                              setSelectedFlags(claim.flags);
+                              setSelectedClaimId(claim.claim_id);
+                              setShowFlagsModal(true);
+                            }}
+                          />
+                          <OverflowMenuItem
+                            itemText="Download Report"
+                            onClick={() => downloadClaimReport(claim.claim_id)}
+                          />
+                          {claim.status === 'RFI' && (
+                            <OverflowMenuItem
+                              itemText="Respond to RFI"
+                              onClick={() => handleOpenRfiModal(claim.claim_id)}
+                            />
+                          )}
+                        </OverflowMenu>
+                      </TableCell>
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {paginatedClaims.length === 0 ? (
-                      <TableRow><TableCell colSpan={5}>No claims found.</TableCell></TableRow>
-                    ) : (
-                      paginatedClaims.map((claim) => (
-                        <TableRow key={claim.claim_id}>
-                          <TableCell>{claim.claim_id}</TableCell>
-                          <TableCell>{statusToGroup[claim.status] || 'Unknown'}</TableCell>
-                          <TableCell><span style={getRiskScoreColor(claim.risk_score || 0)}>{claim.risk_score || 0}</span></TableCell>
-                          <TableCell>{claim.flags ? claim.flags.length : 0}</TableCell>
-                          <TableCell>
-                            <OverflowMenu renderIcon={OverflowMenuVertical} size="sm" flipped>
-                              <OverflowMenuItem
-                                itemText="See Flags"
-                                onClick={() => {
-                                  setSelectedFlags(claim.flags);
-                                  setSelectedClaimId(claim.claim_id);
-                                  setShowFlagsModal(true);
-                                }}
-                              />
-                              <OverflowMenuItem
-                                itemText="Download Report"
-                                onClick={() => downloadClaimReport(claim.claim_id)}
-                              />
-                            </OverflowMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
                 <Pagination
                   page={currentPage}
                   pageSize={ROWS_PER_PAGE}
@@ -518,8 +569,6 @@ ${reportData.analysis_summary}
                   size="sm"
                   style={{ marginTop: 16 }}
                 />
-              </>
-            )}
             <Modal
               open={showFlagsModal}
               modalHeading={`Fraud Flags for Claim ${selectedClaimId}`}
@@ -541,6 +590,55 @@ ${reportData.analysis_summary}
               ) : (
                 <span style={{ color: '#888' }}>No fraud flags for this claim.</span>
               )}
+            </Modal>
+            <Modal
+              open={showRfiModal}
+              modalHeading={`Respond to RFI for Claim ${rfiClaimId}`}
+              primaryButtonText="Submit"
+              secondaryButtonText="Cancel"
+              onRequestClose={handleCloseRfiModal}
+              onRequestSubmit={handleSubmitRfi}
+              passiveModal={false}
+              preventCloseOnClickOutside={true}
+              primaryButtonDisabled={rfiLoading}
+              secondaryButtonDisabled={rfiLoading}
+            >
+              <div style={{ marginBottom: 16 }}>
+                <strong>Claim ID:</strong> {rfiClaimId}
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label><strong>Information Requested:</strong></label>
+                <div style={{ 
+                  padding: '8px', 
+                  backgroundColor: '#f4f4f4', 
+                  borderRadius: '4px', 
+                  marginTop: 4,
+                  minHeight: '60px',
+                  whiteSpace: 'pre-wrap'
+                }}>
+                  {rfiNotes}
+                </div>
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label>Your Response:</label>
+                <textarea
+                  style={{ width: '100%', minHeight: 80, marginTop: 4 }}
+                  value={rfiResponse}
+                  onChange={e => setRfiResponse(e.target.value)}
+                  disabled={rfiLoading}
+                  placeholder="Please provide the requested information..."
+                />
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label>Upload Documents:</label>
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleRfiFileChange}
+                  disabled={rfiLoading}
+                  style={{ display: 'block', marginTop: 4 }}
+                />
+              </div>
             </Modal>
           </Tile>
         </div>

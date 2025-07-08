@@ -51,6 +51,8 @@
   font-size: 2rem;
   font-weight: 700;
   color: #161616;
+  text-align: center;
+  align-self: center;
 }
 
 .dashboard-card-icon {

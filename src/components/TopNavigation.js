@@ -8,7 +8,7 @@ import { useAuth } from "../App";
 
 const navItems = [
   { name: "Dashboard", href: "/" },
-  { name: "Claims", href: "/claims" },
+  { name: "New Claim", href: "/claims" },
   // { name: "Analytics", href: "/analytics" },
 ];
 
@@ -87,7 +87,8 @@ const TopNavigation = () => {
               ))}
             </div>
           )}
-          <HeaderGlobalAction aria-label="User Profile" onClick={() => navigate('/admin')}>
+          {/* User Icon - now static */}
+          <HeaderGlobalAction aria-label="User Profile" style={{ cursor: 'default' }}>
             <UserAvatar />
           </HeaderGlobalAction>
           <HeaderGlobalAction aria-label="Logout" onClick={() => { logout(); navigate("/login"); }}>

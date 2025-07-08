@@ -24,11 +24,11 @@ import { getUserData } from "../utils/auth";
 
 const insuranceProviders = [
   { value: "", label: "Select provider" },
-  { value: "aetna", label: "Aetna" },
-  { value: "cigna", label: "Cigna" },
-  // { value: "united", label: "United Healthcare" },
-  // { value: "anthem", label: "Anthem" },
-  // { value: "humana", label: "Humana" },
+  { value: "Aetna", label: "Aetna" },
+  { value: "Cigna", label: "Cigna" },
+  { value: "United Healthcare", label: "United Healthcare" },
+  { value: "Anthem", label: "Anthem" },
+  { value: "Humana", label: "Humana" },
 ];
 
 export default function ClaimsPatient() {
@@ -339,9 +339,9 @@ export default function ClaimsPatient() {
   return (
     <div className="claims-main">
       <div className="claims-actions-row" style={{ display: 'flex', gap: 16 }}>
-        <Button size="lg" kind={showForm ? "primary" : "secondary"} onClick={() => setShowForm(true)}>
+        {/* <Button size="lg" kind={showForm ? "primary" : "secondary"} onClick={() => setShowForm(true)}>
           New Claim
-        </Button>
+        </Button> */}
         {/* <Button size="lg" kind={!showForm ? "primary" : "secondary"} onClick={() => setShowForm(false)}>
           Track Progress
         </Button> */}

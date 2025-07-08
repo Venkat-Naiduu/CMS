@@ -8,7 +8,7 @@ import { useAuth } from "../App";
 
 const navItems = [
   { name: "Dashboard", href: "/patient" },
-  { name: "Claims", href: "/claims_patient" },
+  { name: "New Claim", href: "/claims_patient" },
 ];
 
 const iconStyle = { color: '#161616' };
